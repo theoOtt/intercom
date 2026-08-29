@@ -51,7 +51,7 @@ The installer:
 3. Generates the machine-local Claude MCP config and launcher.
 4. Backs up and installs the Claude skill.
 5. Backs up `~/.codex/config.toml`, updates only the `intercom` MCP entry, and installs the Codex skill.
-6. Adds `claude` and `codex-intercom` launcher sources to `~/.zshrc` when absent.
+6. Adds `claude`, ordinary interactive `codex`, and `codex-intercom` launcher functions to the shell.
 7. Runs the database tests.
 
 Backups are written beneath `~/.claude/_backups/intercom-<timestamp>/`. Machine-specific configs,
@@ -68,11 +68,16 @@ Claude Code continues to launch as:
 claude
 ```
 
-Launch a Codex session with idle wake and a visible TUI:
+Ordinary interactive Codex launches now include idle wake and a visible TUI automatically:
 
 ```bash
-codex-intercom --cwd /absolute/path/to/worktree
+codex -C /absolute/path/to/worktree
 ```
+
+Administrative and non-interactive commands such as `codex mcp`, `codex update`, `codex doctor`,
+`codex exec`, and `codex queue` bypass the relay and continue directly to the Codex CLI.
+
+Use the explicit launcher when choosing an Intercom room or requested seat:
 
 The worktree basename is the default room. Choose a room and seat explicitly:
 
@@ -85,6 +90,8 @@ Pass Codex arguments after `--`, including resume:
 ```bash
 codex-intercom --cwd /absolute/path/to/worktree -- resume <THREAD_UUID>
 ```
+
+The ordinary equivalent is `codex resume <THREAD_UUID>`.
 
 Inside either agent, natural requests map to the MCP tools:
 

@@ -13,7 +13,15 @@ Restart Codex after changing MCP or skill configuration. Confirm the seven tools
 
 ## Launch
 
-Use the launcher instead of plain `codex` when the session should receive idle-wake messages:
+The installer wraps ordinary interactive `codex` invocations, so this receives idle-wake messages:
+
+```bash
+codex -C /absolute/path/to/worktree
+```
+
+Commands that do not represent an interactive work session (`codex mcp`, `codex update`,
+`codex doctor`, `codex exec`, and other management subcommands) bypass the wrapper. The explicit
+launcher remains available when choosing Intercom-specific room and seat values:
 
 ```bash
 node /absolute/path/intercom/codex/launch.mjs --cwd /absolute/path/to/worktree

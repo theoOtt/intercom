@@ -147,7 +147,20 @@ function installCodex() {
   writeFileSync(
     codexAlias,
     `# Intercom launcher: visible Codex TUI + idle-wake relay.\n` +
-      `codex-intercom() { node "${join(ROOT, 'codex', 'launch.mjs')}" "$@"; }\n`
+      `codex-intercom() { node "${join(ROOT, 'codex', 'launch.mjs')}" "$@"; }\n` +
+      `_codex_intercom_passthrough() {\n` +
+      `  case "\${1:-}" in\n` +
+      `    agents|exec|review|login|logout|mcp|plugin|mcp-server|app-server|remote-control|app|completion|update|doctor|sandbox|debug|apply|queue|archive|delete|migrate-rollouts|unarchive|cloud|exec-server|features|help|-h|--help|-V|--version|--remote|--remote=*) return 0 ;;\n` +
+      `    *) return 1 ;;\n` +
+      `  esac\n` +
+      `}\n` +
+      `codex() {\n` +
+      `  if _codex_intercom_passthrough "$@"; then\n` +
+      `    command codex "$@"\n` +
+      `  else\n` +
+      `    node "${join(ROOT, 'codex', 'launch.mjs')}" -- "$@"\n` +
+      `  fi\n` +
+      `}\n`
   )
   const zshrc = join(HOME_DIR, '.zshrc')
   const sourceLine = `source "${codexAlias}"`
@@ -167,4 +180,4 @@ if (!SKIP_CLAUDE) installClaude()
 if (!SKIP_CODEX) installCodex()
 run('node', ['--no-warnings', join(ROOT, 'bridge', 'test-db.mjs')], { cwd: ROOT })
 process.stdout.write('\nIntercom installed. Restart Claude Code and Codex sessions before using directed messages.\n')
-process.stdout.write('Open a new shell, then use `claude` or `codex-intercom --cwd /path/to/worktree`.\n')
+process.stdout.write('Open a new shell, then use `claude` or ordinary interactive `codex`.\n')

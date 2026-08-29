@@ -20,7 +20,16 @@ function parseArgs(argv) {
     const index = own.indexOf(name)
     return index >= 0 ? own[index + 1] : fallback
   }
-  const cwd = resolve(value('--cwd', process.cwd()))
+  const codexCwd = (() => {
+    for (let index = 0; index < codexArgs.length; index++) {
+      if ((codexArgs[index] === '-C' || codexArgs[index] === '--cd') && codexArgs[index + 1]) {
+        return codexArgs[index + 1]
+      }
+      if (codexArgs[index].startsWith('--cd=')) return codexArgs[index].slice('--cd='.length)
+    }
+    return null
+  })()
+  const cwd = resolve(value('--cwd', codexCwd || process.cwd()))
   return {
     cwd,
     chat: safeChat(value('--chat', basename(cwd))),
