@@ -9,12 +9,12 @@ import { AppServerClient } from './app-server-client.mjs'
 import {
   openDb,
   listSeats,
+  listIdentityMemberships,
   maxId,
   messagesAfter,
   getDeliveryCursor,
   setDeliveryCursor,
   migrateIdentity,
-  resolveRename,
 } from '../bridge/chat-db.mjs'
 
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
@@ -62,7 +62,7 @@ export class CodexRelay {
     if (!identityFile) throw new Error('identityFile is required')
     this.endpoint = endpoint
     this.dbPath = dbPath
-    this.chat = safeChat(chat)
+    this.primaryChat = safeChat(chat)
     this.identityFile = identityFile
     this.threadId = threadId
     this.pollMs = pollMs
@@ -71,9 +71,9 @@ export class CodexRelay {
     this.db = openDb(dbPath)
     this.client = client || new AppServerClient(endpoint)
     this.running = false
-    this.seat = null
     this.identity = null
     this.consumer = 'codex-app-server'
+    this.memberships = new Map()
   }
 
   async start() {
@@ -84,7 +84,9 @@ export class CodexRelay {
     this.threadId = this.threadId || await this.#waitForSingleLoadedThread()
     if (!this.running || !this.threadId) return
     await this.#adoptThreadIdentity()
-    this.log(`attached chat="${this.chat}" seat="${this.seat}" thread="${this.threadId}"`)
+    this.log(
+      `attached thread="${this.threadId}" rooms=${this.#membershipSummary()}`
+    )
     await this.#pollLoop()
   }
 
@@ -114,7 +116,7 @@ export class CodexRelay {
 
     let seatRow = null
     for (let attempt = 0; attempt < 100 && this.running; attempt++) {
-      seatRow = listSeats(this.db, this.chat).find(
+      seatRow = listSeats(this.db, this.primaryChat).find(
         (candidate) => candidate.identity === provisional || candidate.identity === stable
       )
       if (seatRow) break
@@ -122,35 +124,79 @@ export class CodexRelay {
     }
     if (!seatRow) {
       throw new Error(
-        `Intercom MCP did not join chat "${this.chat}" within 30 seconds; verify Codex MCP configuration`
+        `Intercom MCP did not join chat "${this.primaryChat}" within 30 seconds; verify Codex MCP configuration`
       )
     }
 
-    let cursor = getDeliveryCursor(this.db, this.chat, provisional, this.consumer)
+    let cursor = getDeliveryCursor(this.db, this.primaryChat, provisional, this.consumer)
+    if (cursor === null && provisional !== stable) {
+      cursor = getDeliveryCursor(this.db, this.primaryChat, stable, this.consumer)
+    }
     if (cursor === null) {
-      cursor = maxId(this.db, this.chat)
-      setDeliveryCursor(this.db, this.chat, provisional, this.consumer, cursor)
+      cursor = maxId(this.db, this.primaryChat)
+      setDeliveryCursor(this.db, this.primaryChat, provisional, this.consumer, cursor)
     }
-    migrateIdentity(this.db, this.chat, seatRow.seat, provisional, stable)
+
+    // A session may join additional rooms before the thread UUID is known. Move
+    // every provisional membership and its room-specific cursor in one pass.
+    for (const membership of listIdentityMemberships(this.db, provisional)) {
+      migrateIdentity(this.db, membership.chat, membership.seat, provisional, stable)
+    }
     writeIdentity(this.identityFile, stable)
-    this.seat = seatRow.seat
     this.identity = stable
-    if (getDeliveryCursor(this.db, this.chat, stable, this.consumer) === null) {
-      setDeliveryCursor(this.db, this.chat, stable, this.consumer, cursor)
+    if (getDeliveryCursor(this.db, this.primaryChat, stable, this.consumer) === null) {
+      setDeliveryCursor(this.db, this.primaryChat, stable, this.consumer, cursor)
     }
+    this.#syncMemberships()
+  }
+
+  #syncMemberships() {
+    const previous = this.memberships
+    const next = new Map()
+    for (const membership of listIdentityMemberships(this.db, this.identity)) {
+      // A healthy bridge owns one seat per room. If an old bridge left a
+      // duplicate, prefer the most recently joined row returned by the query.
+      if (next.has(membership.chat)) continue
+      let cursor = getDeliveryCursor(this.db, membership.chat, this.identity, this.consumer)
+      if (cursor === null) {
+        cursor = maxId(this.db, membership.chat)
+        setDeliveryCursor(this.db, membership.chat, this.identity, this.consumer, cursor)
+      }
+      next.set(membership.chat, { seat: membership.seat })
+      const old = previous.get(membership.chat)
+      if (!old) {
+        this.log(`watching chat="${membership.chat}" seat="${membership.seat}" cursor=${cursor}`)
+      } else if (old.seat !== membership.seat) {
+        this.log(
+          `seat changed chat="${membership.chat}" "${old.seat}" -> "${membership.seat}"`
+        )
+      }
+    }
+    for (const [chat, membership] of previous) {
+      if (!next.has(chat)) this.log(`stopped watching chat="${chat}" seat="${membership.seat}"`)
+    }
+    this.memberships = next
+  }
+
+  #membershipSummary() {
+    const rooms = [...this.memberships.entries()].map(([chat, value]) => `${chat}:${value.seat}`)
+    return rooms.length ? `[${rooms.join(', ')}]` : '[]'
   }
 
   async #pollLoop() {
     while (this.running) {
-      const renamed = resolveRename(this.db, this.chat)
-      if (renamed !== this.chat) {
-        this.log(`chat renamed "${this.chat}" -> "${renamed}"`)
-        this.chat = renamed
+      this.#syncMemberships()
+      let pending = null
+      for (const [chat, membership] of this.memberships) {
+        const cursor = getDeliveryCursor(this.db, chat, this.identity, this.consumer) ?? 0
+        const row = messagesAfter(this.db, chat, membership.seat, cursor, {
+          identity: this.identity,
+        })[0]
+        if (row && (!pending || row.id < pending.row.id)) {
+          pending = { chat, membership, row }
+        }
       }
-
-      const cursor = getDeliveryCursor(this.db, this.chat, this.identity, this.consumer) ?? 0
-      const rows = messagesAfter(this.db, this.chat, this.seat, cursor, { identity: this.identity })
-      if (!rows.length) {
+      if (!pending) {
         await sleep(this.pollMs)
         continue
       }
@@ -161,15 +207,19 @@ export class CodexRelay {
         continue
       }
 
-      const row = rows[0]
-      const input = [{ type: 'text', text: messagePrompt(this.chat, row) }]
+      const { chat, row } = pending
+      // Membership can change while the thread-status request is in flight.
+      // Reconfirm before starting a turn so leave/rename takes effect immediately.
+      this.#syncMemberships()
+      if (!this.memberships.has(chat)) continue
+      const input = [{ type: 'text', text: messagePrompt(chat, row) }]
       if (existsSync(this.skillPath)) {
         input.push({ type: 'skill', name: 'intercom', path: this.skillPath })
       }
       await this.client.request('turn/start', { threadId: this.threadId, input })
-      setDeliveryCursor(this.db, this.chat, this.identity, this.consumer, row.id)
+      setDeliveryCursor(this.db, chat, this.identity, this.consumer, row.id)
       this.log(
-        `delivered chat="${this.chat}" id=${row.id} from="${row.seat}"` +
+        `delivered chat="${chat}" id=${row.id} from="${row.seat}"` +
         (row.to_seat ? ` direct-to="${row.to_seat}"` : ' broadcast')
       )
     }

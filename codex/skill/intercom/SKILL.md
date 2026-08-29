@@ -7,6 +7,8 @@ description: Coordinate and exchange messages with other live Claude Code or Cod
 
 Intercom is shared chat for Claude Code and Codex sessions. The standard MCP tools work in
 Codex; a separately launched Codex relay delivers new messages into idle threads.
+The relay automatically watches every room this session joins, including rooms joined or left
+after startup. Each room has an independent durable delivery cursor.
 
 ## Tools
 

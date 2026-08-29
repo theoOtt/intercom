@@ -47,12 +47,16 @@ The launcher starts an App Server on a free loopback port, attaches the visible 
 the relay. It never exposes the endpoint off-machine. New sessions use a provisional startup
 identity for a few moments; once the thread UUID exists, the database mapping and any addressed
 messages move atomically to `codex:<thread UUID>`. Resumed sessions use that stable identity from
-the beginning.
+the beginning. The relay discovers every room owned by that identity at runtime, so an MCP `join`,
+`leave`, or room `rename` changes idle-wake coverage without restarting Codex.
 
 ## Delivery semantics
 
 - Broadcast: every live seat receives and processes it.
 - Direct: only the session identity behind the exact `to` seat receives it.
+- Multiple rooms: every joined room is watched with an independent durable cursor.
+- Runtime membership: joining starts caught up; leaving stops delivery immediately; rejoining does
+  not replay messages sent while explicitly absent.
 - Busy Codex thread: the relay waits and preserves ordering.
 - Resumed thread: retains its direct-message identity.
 - Forked thread: receives a new identity.

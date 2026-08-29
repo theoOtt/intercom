@@ -5,13 +5,32 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { randomUUID } from 'node:crypto'
 import { CodexRelay } from './relay.mjs'
-import { openDb, claimSeat, sendMessage, history } from '../bridge/chat-db.mjs'
+import {
+  openDb,
+  claimSeat,
+  releaseSeat,
+  sendMessage,
+  history,
+  maxId,
+  getDeliveryCursor,
+  setDeliveryCursor,
+  deleteDeliveryCursor,
+  migrateChat,
+} from '../bridge/chat-db.mjs'
 
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
 const assert = (condition, message) => {
   if (!condition) throw new Error(`FAIL: ${message}`)
   process.stdout.write(`PASS: ${message}\n`)
 }
+const waitFor = async (condition, message) => {
+  for (let attempt = 0; attempt < 200; attempt++) {
+    if (condition()) return
+    await sleep(10)
+  }
+  throw new Error(`FAIL: timed out waiting for ${message}`)
+}
+const turnText = (turn) => turn.input.find((item) => item.type === 'text')?.text || ''
 class FakeAppServer extends EventEmitter {
   constructor(threadId) {
     super()
@@ -57,9 +76,7 @@ const relay = new CodexRelay({
 
 try {
   const run = relay.start()
-  for (let attempt = 0; attempt < 100 && !logs.some((line) => line.startsWith('attached')); attempt++) {
-    await sleep(10)
-  }
+  await waitFor(() => logs.some((line) => line.startsWith('attached')), 'relay attachment')
   const stable = `codex:${threadId}`
   assert(readFileSync(identityFile, 'utf8').trim() === stable, 'relay adopts Codex thread UUID as durable identity')
 
@@ -68,25 +85,72 @@ try {
     toSeat: 'reviewer',
     toIdentity: stable,
   })
-  for (let attempt = 0; attempt < 100 && fake.turns.length === 0; attempt++) await sleep(10)
+  await waitFor(() => fake.turns.length === 1, 'primary-room direct message')
   assert(fake.turns.length === 1, 'direct message starts exactly one Codex turn')
-  assert(fake.turns[0].input[0].text.includes('wake the reviewer'), 'turn contains peer message body')
-  assert(fake.turns[0].input[0].text.includes('From seat: claude'), 'turn identifies the sender seat')
+  assert(turnText(fake.turns[0]).includes('wake the reviewer'), 'turn contains peer message body')
+  assert(turnText(fake.turns[0]).includes('From seat: claude'), 'turn identifies the sender seat')
 
   sendMessage(db, 'relay-test', 'claude', 'room broadcast', { senderIdentity: 'claude:sender' })
-  for (let attempt = 0; attempt < 100 && fake.turns.length < 2; attempt++) await sleep(10)
+  await waitFor(() => fake.turns.length === 2, 'primary-room broadcast')
   assert(fake.turns.length === 2, 'broadcast also starts a Codex turn')
 
-  const privateForSomeoneElse = sendMessage(db, 'relay-test', 'claude', 'not for reviewer', {
-    senderIdentity: 'claude:sender',
+  // Simulate a runtime MCP join. The bridge seeds the independent relay cursor
+  // at the join boundary before the relay discovers the new membership.
+  claimSeat(db, 'second-room', 'reviewer-two', stable)
+  setDeliveryCursor(db, 'second-room', stable, 'codex-app-server', maxId(db, 'second-room'))
+  claimSeat(db, 'second-room', 'claude-two', 'claude:sender-two')
+  sendMessage(db, 'second-room', 'claude-two', 'hello from the second room', {
+    senderIdentity: 'claude:sender-two',
+    toSeat: 'reviewer-two',
+    toIdentity: stable,
+  })
+  await waitFor(() => fake.turns.length === 3, 'runtime-joined room message')
+  assert(turnText(fake.turns[2]).includes('Chat: second-room'), 'runtime-joined room identifies its chat')
+  assert(turnText(fake.turns[2]).includes('hello from the second room'), 'runtime-joined room wakes Codex')
+
+  sendMessage(db, 'relay-test', 'claude', 'ordered first', { senderIdentity: 'claude:sender' })
+  sendMessage(db, 'second-room', 'claude-two', 'ordered second', { senderIdentity: 'claude:sender-two' })
+  await waitFor(() => fake.turns.length === 5, 'cross-room ordered messages')
+  assert(turnText(fake.turns[3]).includes('ordered first'), 'oldest pending room message is delivered first')
+  assert(turnText(fake.turns[4]).includes('ordered second'), 'next room message preserves global order')
+
+  const privateForSomeoneElse = sendMessage(db, 'second-room', 'claude-two', 'not for reviewer', {
+    senderIdentity: 'claude:sender-two',
     toSeat: 'someone-else',
     toIdentity: 'codex:someone-else',
   })
   await sleep(80)
-  assert(fake.turns.length === 2, 'direct message to another identity is ignored')
+  assert(fake.turns.length === 5, 'direct message to another identity is ignored in a secondary room')
   assert(
-    !history(db, 'relay-test', { viewerIdentity: stable }).some((row) => row.id === privateForSomeoneElse),
+    !history(db, 'second-room', { viewerIdentity: stable }).some((row) => row.id === privateForSomeoneElse),
     'other direct message is hidden from resumed session history'
+  )
+
+  migrateChat(db, 'second-room', 'renamed-room')
+  sendMessage(db, 'renamed-room', 'claude-two', 'message after rename', {
+    senderIdentity: 'claude:sender-two',
+  })
+  await waitFor(() => fake.turns.length === 6, 'renamed room message')
+  assert(turnText(fake.turns[5]).includes('Chat: renamed-room'), 'renamed room remains watched')
+
+  deleteDeliveryCursor(db, 'renamed-room', stable, 'codex-app-server')
+  releaseSeat(db, 'renamed-room', 'reviewer-two')
+  sendMessage(db, 'renamed-room', 'claude-two', 'message while explicitly absent', {
+    senderIdentity: 'claude:sender-two',
+  })
+  await sleep(80)
+  assert(fake.turns.length === 6, 'explicitly left room is no longer watched')
+
+  claimSeat(db, 'renamed-room', 'reviewer-returned', stable)
+  setDeliveryCursor(db, 'renamed-room', stable, 'codex-app-server', maxId(db, 'renamed-room'))
+  sendMessage(db, 'renamed-room', 'claude-two', 'message after rejoin', {
+    senderIdentity: 'claude:sender-two',
+  })
+  await waitFor(() => fake.turns.length === 7, 'rejoined room message')
+  assert(turnText(fake.turns[6]).includes('message after rejoin'), 'rejoined room is watched again')
+  assert(
+    !fake.turns.some((turn) => turnText(turn).includes('message while explicitly absent')),
+    'messages sent while explicitly absent are not replayed on rejoin'
   )
   relay.stop()
   await run

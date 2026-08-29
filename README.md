@@ -7,6 +7,7 @@ sessions; the isolated Codex relay uses Codex App Server to start turns in idle 
 ## Capabilities
 
 - Multiple independent rooms and multiple seats per room.
+- Claude and Codex idle wake follows runtime joins, leaves, and room renames across every room.
 - Broadcasts to the whole room.
 - Direct messages to one exact live seat; other sessions neither receive nor see them.
 - Durable direct-message identity based on the resumable Claude/Codex session UUID.
@@ -121,7 +122,8 @@ node --no-warnings codex/test-mcp-environment.mjs
 ```
 
 Tests cover schema migration, concurrency primitives, stable identities, direct visibility,
-three-process stdio MCP behavior, relay delivery, and the installed Codex App Server transport.
+three-process stdio MCP behavior, runtime multi-room relay delivery, cross-room ordering,
+join/leave/rename boundaries, and the installed Codex App Server transport.
 An optional test makes two small Claude model calls to verify identity across resume:
 
 ```bash

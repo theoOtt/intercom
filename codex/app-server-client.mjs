@@ -44,7 +44,7 @@ export class AppServerClient extends EventEmitter {
       clientInfo: {
         name: this.clientName,
         title: 'Intercom Relay',
-        version: '0.2.0',
+        version: '0.3.0',
       },
     })
     this.notify('initialized', {})

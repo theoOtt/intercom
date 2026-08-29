@@ -26,6 +26,7 @@ import {
   openDb, claimSeat, releaseSeat, listSeats, knownChats,
   sendMessage, messagesAfter, history, maxId,
   getCursor, setCursor, heartbeat, whoOnline,
+  getDeliveryCursor, setDeliveryCursor, deleteDeliveryCursor,
   migrateChat, resolveRename, migrateIdentity,
 } from './chat-db.mjs'
 
@@ -55,9 +56,10 @@ const db = openDb(CHAT_DB)
 
 // In-memory membership: chat -> { seat, cursor }. This is what the poll loop walks.
 const joined = new Map()
+const CODEX_RELAY_CONSUMER = 'codex-app-server'
 
 const server = new Server(
-  { name: 'intercom', version: '0.2.0' },
+  { name: 'intercom', version: '0.3.0' },
   {
     capabilities: { experimental: { 'claude/channel': {} }, tools: {} },
     instructions:
@@ -88,6 +90,7 @@ function resolveChat(arg) {
 
 function doJoin(chat, seat) {
   const identity = currentIdentity()
+  const previous = joined.get(chat)
   const assigned = claimSeat(db, chat, seat || null, identity)
   if (!assigned) {
     throw new Error(
@@ -97,6 +100,14 @@ function doJoin(chat, seat) {
   // Start caught-up so history is not replayed as unread.
   let cur = getCursor(db, chat, assigned)
   if (cur === null) { cur = maxId(db, chat); setCursor(db, chat, assigned, cur) }
+  // Establish the Codex wake boundary at join time. The relay discovers rooms
+  // asynchronously; without this independent cursor, a message arriving between
+  // join and discovery could be mistaken for old history and skipped.
+  if ((identity.startsWith('codex:') || process.env.CHAT_IDENTITY_FILE) &&
+      getDeliveryCursor(db, chat, identity, CODEX_RELAY_CONSUMER) === null) {
+    setDeliveryCursor(db, chat, identity, CODEX_RELAY_CONSUMER, cur)
+  }
+  if (previous && previous.seat !== assigned) releaseSeat(db, chat, previous.seat)
   joined.set(chat, { seat: assigned, cursor: cur, identity })
   log(`joined chat="${chat}" seat="${assigned}" identity="${identity}" cursor=${cur}`)
   const peers = listSeats(db, chat).filter((s) => s.seat !== assigned).map((s) => s.seat)
@@ -143,6 +154,7 @@ server.setRequestHandler(CallToolRequestSchema, async (req) => {
     case 'leave': {
       const chat = resolveChat(a.chat)
       const { seat } = joined.get(chat)
+      deleteDeliveryCursor(db, chat, currentIdentity(), CODEX_RELAY_CONSUMER)
       releaseSeat(db, chat, seat)
       joined.delete(chat)
       log(`left chat="${chat}" seat="${seat}"`)

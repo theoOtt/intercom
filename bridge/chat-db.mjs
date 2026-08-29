@@ -156,6 +156,19 @@ export function listSeats(db, chat) {
   return db.prepare('SELECT seat, identity FROM seats WHERE chat = :chat ORDER BY seat').all({ chat })
 }
 
+/** Every room/seat currently owned by one durable agent-session identity. */
+export function listIdentityMemberships(db, identity) {
+  return db
+    .prepare(
+      `SELECT s.chat, s.seat, s.identity, s.joined_ts, p.last_seen_epoch
+         FROM seats s
+         LEFT JOIN presence p ON p.chat = s.chat AND p.seat = s.seat
+        WHERE s.identity = :identity
+        ORDER BY s.chat, s.joined_ts DESC, s.seat`
+    )
+    .all({ identity })
+}
+
 /**
  * Replace a provisional process identity with a durable agent-session identity.
  * This is used when a Codex launcher learns the thread UUID after the MCP bridge
@@ -365,6 +378,13 @@ export function setDeliveryCursor(db, chat, identity, consumer, id) {
      VALUES (:chat, :identity, :consumer, :id)
      ON CONFLICT(chat, identity, consumer) DO UPDATE SET last_read_id = :id`
   ).run({ chat, identity, consumer, id })
+}
+
+export function deleteDeliveryCursor(db, chat, identity, consumer) {
+  db.prepare(
+    `DELETE FROM delivery_cursors
+      WHERE chat = :chat AND identity = :identity AND consumer = :consumer`
+  ).run({ chat, identity, consumer })
 }
 
 export function heartbeat(db, chat, seat, epoch) {

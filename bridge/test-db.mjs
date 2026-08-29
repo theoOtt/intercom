@@ -4,10 +4,11 @@ import { join } from 'node:path'
 import { rmSync } from 'node:fs'
 import { DatabaseSync } from 'node:sqlite'
 import {
-  openDb, claimSeat, releaseSeat, listSeats, knownChats,
+  openDb, claimSeat, releaseSeat, listSeats, listIdentityMemberships, knownChats,
   migrateIdentity,
   sendMessage, messagesAfter, history, maxId,
-  getCursor, setCursor, getDeliveryCursor, setDeliveryCursor, heartbeat, whoOnline,
+  getCursor, setCursor, getDeliveryCursor, setDeliveryCursor, deleteDeliveryCursor,
+  heartbeat, whoOnline,
   migrateChat, resolveRename,
 } from './chat-db.mjs'
 
@@ -83,6 +84,15 @@ try {
   setDeliveryCursor(db, 'x', 'codex:thread-b', 'codex-relay', directToB)
   ok(getDeliveryCursor(db, 'x', 'codex:thread-b', 'codex-relay') === directToB,
      'independent delivery cursor persists per identity and consumer')
+  claimSeat(db, 'multi-a', 'worker-a', 'codex:multi-room')
+  claimSeat(db, 'multi-b', 'worker-b', 'codex:multi-room')
+  const memberships = listIdentityMemberships(db, 'codex:multi-room')
+  ok(memberships.map((row) => row.chat).join(',') === 'multi-a,multi-b',
+     'durable identity enumerates memberships across multiple rooms')
+  setDeliveryCursor(db, 'multi-a', 'codex:multi-room', 'codex-app-server', 17)
+  deleteDeliveryCursor(db, 'multi-a', 'codex:multi-room', 'codex-app-server')
+  ok(getDeliveryCursor(db, 'multi-a', 'codex:multi-room', 'codex-app-server') === null,
+     'explicit leave can remove one room delivery cursor')
 
   // --- history windowing ---
   for (let i = 0; i < 5; i++) sendMessage(db, 'h', 'a', `msg ${i}`)

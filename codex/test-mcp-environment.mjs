@@ -6,7 +6,12 @@ import { mkdtempSync, mkdirSync, rmSync, writeFileSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 import { randomUUID } from 'node:crypto'
 import { AppServerClient } from './app-server-client.mjs'
-import { history, openDb } from '../bridge/chat-db.mjs'
+import {
+  history,
+  openDb,
+  listIdentityMemberships,
+  getDeliveryCursor,
+} from '../bridge/chat-db.mjs'
 
 const sleep = (ms) => new Promise((resolvePromise) => setTimeout(resolvePromise, ms))
 // Keep the database inside the thread's writable workspace. Codex sandboxing can
@@ -122,6 +127,49 @@ try {
   await client.request('mcpServer/tool/call', {
     server: 'intercom',
     threadId: result.thread.id,
+    tool: 'join',
+    arguments: { chat: 'environment-second', seat: 'reviewer-two' },
+  })
+  let secondMembership = null
+  let secondCursor = null
+  for (let attempt = 0; attempt < 100 && (!secondMembership || secondCursor === null); attempt++) {
+    const db = openDb(dbPath)
+    secondMembership = listIdentityMemberships(db, provisional)
+      .find((candidate) => candidate.chat === 'environment-second')
+    secondCursor = getDeliveryCursor(
+      db, 'environment-second', provisional, 'codex-app-server'
+    )
+    db.close()
+    if (!secondMembership || secondCursor === null) await sleep(50)
+  }
+  if (secondMembership?.seat !== 'reviewer-two' || secondCursor === null) {
+    throw new Error(
+      `Runtime room join did not persist membership/cursor: ` +
+      `${JSON.stringify({ secondMembership, secondCursor })}`
+    )
+  }
+  await client.request('mcpServer/tool/call', {
+    server: 'intercom',
+    threadId: result.thread.id,
+    tool: 'leave',
+    arguments: { chat: 'environment-second' },
+  })
+  const afterLeave = openDb(dbPath)
+  const leftMembership = listIdentityMemberships(afterLeave, provisional)
+    .find((candidate) => candidate.chat === 'environment-second')
+  const leftCursor = getDeliveryCursor(
+    afterLeave, 'environment-second', provisional, 'codex-app-server'
+  )
+  afterLeave.close()
+  if (leftMembership || leftCursor !== null) {
+    throw new Error(
+      `Runtime room leave retained membership/cursor: ` +
+      `${JSON.stringify({ leftMembership, leftCursor })}`
+    )
+  }
+  await client.request('mcpServer/tool/call', {
+    server: 'intercom',
+    threadId: result.thread.id,
     tool: 'send',
     arguments: { chat: 'environment-test', body: 'environment identity probe' },
   })
@@ -139,7 +187,9 @@ try {
       `MCP database/identity configuration was not inherited; observed=${JSON.stringify(message)}`
     )
   }
-  process.stdout.write('PASS: Codex started Intercom, exposed all seven tools, and inherited its chat/seat/identity environment\n')
+  process.stdout.write(
+    'PASS: Codex started Intercom, exposed all seven tools, inherited its environment, and persisted runtime room join/leave boundaries\n'
+  )
   client.close()
 } catch (error) {
   throw new Error(
