@@ -1,0 +1,12 @@
+.DS_Store
+node_modules/
+bridge/node_modules/
+*.db
+*.db-shm
+*.db-wal
+*.log
+.env
+.env.*
+mcp.json
+alias.sh
+codex-alias.sh

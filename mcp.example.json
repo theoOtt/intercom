@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "intercom": {
+      "command": "node",
+      "args": ["/ABSOLUTE/PATH/TO/intercom/bridge/bridge.mjs"],
+      "env": {
+        "CHAT_DB": "/ABSOLUTE/PATH/TO/.claude/intercom/chat.db",
+        "CHAT_AUTOJOIN_PROJECT": "1"
+      }
+    }
+  }
+}

@@ -1,0 +1,8 @@
+[mcp_servers.intercom]
+command = "node"
+args = ["/ABSOLUTE/PATH/TO/intercom/bridge/bridge.mjs"]
+enabled_tools = ["join", "leave", "chats", "send", "history", "who", "rename"]
+
+[mcp_servers.intercom.env]
+CHAT_DB = "/ABSOLUTE/PATH/TO/.claude/intercom/chat.db"
+CHAT_AUTOJOIN_PROJECT = "1"
