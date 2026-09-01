@@ -1,0 +1,13 @@
+{
+  "name": "intercom",
+  "version": "0.4.5",
+  "description": "Local real-time chat and directed coordination between Claude Code and Codex sessions.",
+  "author": {
+    "name": "Theo Ott",
+    "url": "https://github.com/theoOtt"
+  },
+  "homepage": "https://github.com/theoOtt/intercom",
+  "repository": "https://github.com/theoOtt/intercom",
+  "keywords": ["intercom", "mcp", "channel", "claude-code", "codex"],
+  "mcpServers": "./.mcp.claude.json"
+}

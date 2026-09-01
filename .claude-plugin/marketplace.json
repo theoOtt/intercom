@@ -1,0 +1,20 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "intercom",
+  "description": "Intercom for local Claude Code and Codex session coordination",
+  "owner": {
+    "name": "Theo Ott"
+  },
+  "plugins": [
+    {
+      "name": "intercom",
+      "description": "Local real-time rooms, direct seat messages, and idle wake for Claude Code and Codex.",
+      "author": {
+        "name": "Theo Ott"
+      },
+      "source": "./plugins/intercom",
+      "category": "productivity",
+      "homepage": "https://github.com/theoOtt/intercom"
+    }
+  ]
+}

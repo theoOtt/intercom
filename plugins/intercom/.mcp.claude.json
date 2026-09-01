@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "intercom": {
+      "command": "node",
+      "args": ["${CLAUDE_PLUGIN_ROOT}/dist/bridge.mjs"],
+      "env": {
+        "CHAT_AUTOJOIN_PROJECT": "1"
+      }
+    }
+  }
+}

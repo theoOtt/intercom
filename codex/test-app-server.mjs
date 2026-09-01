@@ -39,4 +39,13 @@ try {
   throw new Error(`${error.message}\nApp Server stderr:\n${stderr}`)
 } finally {
   try { process.kill(-server.pid, 'SIGTERM') } catch {}
+  if (server.exitCode === null) {
+    await Promise.race([
+      new Promise((resolvePromise) => server.once('exit', resolvePromise)),
+      sleep(2_000),
+    ])
+  }
+  if (server.exitCode === null) {
+    try { process.kill(-server.pid, 'SIGKILL') } catch {}
+  }
 }

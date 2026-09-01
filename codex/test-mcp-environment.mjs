@@ -205,6 +205,13 @@ try {
       sleep(2_000),
     ])
   }
+  if (server.exitCode === null) {
+    try { process.kill(-server.pid, 'SIGKILL') } catch {}
+    await Promise.race([
+      new Promise((resolvePromise) => server.once('exit', resolvePromise)),
+      sleep(2_000),
+    ])
+  }
   for (let attempt = 0; attempt < 20; attempt++) {
     try {
       rmSync(temp, { recursive: true, force: true, maxRetries: 3, retryDelay: 50 })

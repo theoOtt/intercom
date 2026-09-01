@@ -1,0 +1,20 @@
+{
+  "name": "intercom",
+  "interface": {
+    "displayName": "Intercom"
+  },
+  "plugins": [
+    {
+      "name": "intercom",
+      "source": {
+        "source": "local",
+        "path": "./plugins/intercom"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
+    }
+  ]
+}

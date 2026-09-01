@@ -35,31 +35,75 @@ from inheriting another session's direct history. Resuming preserves identity; f
 - Node.js 22.5 or newer (`node:sqlite`); current development uses Node 26.
 - Claude Code for Claude idle-wake delivery.
 - Codex CLI with App Server WebSocket support for Codex idle-wake delivery.
-- Yarn or npm to install the MCP SDK.
+- Yarn Classic only when rebuilding the committed standalone plugin bundle from source.
 
-## Install or update
+## Marketplace install (recommended)
 
-Clone the repository, then run:
+The repository is a private marketplace for both products. Authenticate GitHub on the machine,
+then install the Codex plugin:
 
 ```bash
+codex plugin marketplace add theoOtt/intercom
+codex plugin add intercom@intercom
+```
+
+Install the Claude Code plugin from the same repository:
+
+```bash
+claude plugin marketplace add theoOtt/intercom
+claude plugin install intercom@intercom --scope user
+```
+
+Plugin installation supplies the bundled MCP bridge and shared skill. Run the recoverable machine
+setup once from either product so ordinary `claude` enables the channel and ordinary interactive
+`codex` starts the idle-wake relay:
+
+```text
+# Start raw Codex once, then ask:
+$intercom set up Intercom on this computer
+
+# Or launch Claude once with the channel and run:
+claude --channels plugin:intercom@intercom
+/intercom:setup
+```
+
+Setup preserves the existing SQLite database, backs up and retires legacy standalone Intercom
+skills/config, installs a stable runtime under `~/.local/share/intercom`, and sources
+`~/.config/intercom/shell.zsh` from `.zshrc`. Open a new terminal after it finishes.
+
+### Marketplace updates
+
+```bash
+codex plugin marketplace upgrade intercom
+codex plugin add intercom@intercom
+
+claude plugin marketplace update intercom
+claude plugin update intercom@intercom
+```
+
+After an update, run the setup skill/command once to refresh the pre-launch runtime, then start new
+agent sessions.
+
+## Legacy/manual install
+
+The original clone installer remains available as a fallback:
+
+```bash
+git clone git@github.com:theoOtt/intercom.git ~/code/intercom
+cd ~/code/intercom
 ./install.sh
 ```
 
-The installer:
+It installs dependencies, backs up/migrates the database, configures MCP and standalone skills,
+and adds shell launchers. Do not use the manual installer and marketplace bootstrap concurrently;
+the marketplace setup safely retires a previous manual installation.
 
-1. Installs bridge dependencies when missing.
-2. Creates a consistent SQLite backup and applies additive schema migrations.
-3. Generates the machine-local Claude MCP config and launcher.
-4. Backs up and installs the Claude skill.
-5. Backs up `~/.codex/config.toml`, updates only the `intercom` MCP entry, and installs the Codex skill.
-6. Adds `claude`, ordinary interactive `codex`, and `codex-intercom` launcher functions to the shell.
-7. Runs the database tests.
+Backups are written beneath `~/.claude/_backups/intercom-<timestamp>/` or
+`intercom-plugin-<timestamp>/`. Machine-specific configs, aliases, dependencies, and databases are
+excluded from Git.
 
-Backups are written beneath `~/.claude/_backups/intercom-<timestamp>/`. Machine-specific configs,
-aliases, dependencies, and databases are excluded from Git.
-
-Use `./install.sh --no-claude` or `./install.sh --no-codex` for a single client. Restart existing
-sessions after installation; an already-running old bridge cannot filter newly directed messages.
+Restart existing sessions after installation; running sessions cannot adopt newly installed MCP,
+skill, channel, or relay code.
 
 ## Use
 
@@ -114,8 +158,14 @@ machine administrators can still inspect it.
 ## Tests
 
 ```bash
-cd bridge && yarn test
+cd bridge
+corepack yarn@1.22.22 install
+corepack yarn@1.22.22 test
+corepack yarn@1.22.22 build:plugin
 cd ..
+node --no-warnings plugins/intercom/test-setup.mjs
+INTERCOM_BRIDGE_PATH=plugins/intercom/dist/bridge.mjs \
+  INTERCOM_TEST_DEFAULT_DB=1 node --no-warnings bridge/test-mcp.mjs
 node --no-warnings codex/test-relay.mjs
 node --no-warnings codex/test-app-server.mjs
 node --no-warnings codex/test-mcp-environment.mjs
@@ -124,10 +174,12 @@ node --no-warnings codex/test-mcp-environment.mjs
 Tests cover schema migration, concurrency primitives, stable identities, direct visibility,
 three-process stdio MCP behavior, runtime multi-room relay delivery, cross-room ordering,
 join/leave/rename boundaries, and the installed Codex App Server transport.
-An optional test makes two small Claude model calls to verify identity across resume:
+An optional test makes two small Claude model calls through the installed marketplace channel to
+verify identity across resume:
 
 ```bash
-INTERCOM_LIVE_CLAUDE_TEST=1 node --no-warnings bridge/test-claude-identity.mjs
+INTERCOM_LIVE_CLAUDE_TEST=1 INTERCOM_TEST_CLAUDE_PLUGIN=1 \
+  node --no-warnings bridge/test-claude-identity.mjs
 ```
 
 See `codex/README.md` for the Codex control-plane details and `docs/SPEC.md` for historical design

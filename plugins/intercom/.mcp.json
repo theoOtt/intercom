@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "intercom": {
+      "type": "stdio",
+      "command": "node",
+      "args": ["${PLUGIN_ROOT}/dist/bridge.mjs"],
+      "env": {
+        "CHAT_AUTOJOIN_PROJECT": "1"
+      }
+    }
+  }
+}

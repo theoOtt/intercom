@@ -16,12 +16,13 @@
 //     so one bad push can never kill the poll loop.
 //  3. stdout is the MCP protocol stream. Log ONLY to process.stderr.
 //
-// Env: CHAT_DB (required). CHAT + SEAT (optional) -> auto-join at startup.
+// Env: CHAT_DB (optional shared DB override). CHAT + SEAT (optional) -> auto-join at startup.
 import { Server } from '@modelcontextprotocol/sdk/server/index.js'
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js'
 import { ListToolsRequestSchema, CallToolRequestSchema } from '@modelcontextprotocol/sdk/types.js'
-import { basename } from 'node:path'
-import { readFileSync } from 'node:fs'
+import { basename, dirname, join } from 'node:path'
+import { homedir } from 'node:os'
+import { mkdirSync, readFileSync } from 'node:fs'
 import {
   openDb, claimSeat, releaseSeat, listSeats, knownChats,
   sendMessage, messagesAfter, history, maxId,
@@ -30,11 +31,10 @@ import {
   migrateChat, resolveRename, migrateIdentity,
 } from './chat-db.mjs'
 
-const CHAT_DB = process.env.CHAT_DB
-if (!CHAT_DB) {
-  process.stderr.write('[bridge] FATAL: CHAT_DB env var is required\n')
-  process.exit(1)
-}
+// Plugin installs intentionally need no machine-specific MCP configuration.
+// Existing/manual installs can continue overriding this path with CHAT_DB.
+const CHAT_DB = process.env.CHAT_DB || join(homedir(), '.claude', 'intercom', 'chat.db')
+mkdirSync(dirname(CHAT_DB), { recursive: true, mode: 0o700 })
 const FALLBACK_IDENTITY = `process:${process.pid}:${Date.now()}`
 function currentIdentity() {
   if (process.env.CHAT_IDENTITY_FILE) {
@@ -59,7 +59,7 @@ const joined = new Map()
 const CODEX_RELAY_CONSUMER = 'codex-app-server'
 
 const server = new Server(
-  { name: 'intercom', version: '0.3.0' },
+  { name: 'intercom', version: '0.4.5' },
   {
     capabilities: { experimental: { 'claude/channel': {} }, tools: {} },
     instructions:
@@ -247,7 +247,7 @@ function projectChat() {
   return (raw || 'project').replace(/[^a-zA-Z0-9._-]/g, '-')
 }
 let startupChat = process.env.CHAT || null
-if (!startupChat && /^(1|true|yes|on)$/i.test(process.env.CHAT_AUTOJOIN_PROJECT || '')) {
+if (!startupChat && /^(1|true|yes|on)$/i.test(process.env.CHAT_AUTOJOIN_PROJECT ?? '1')) {
   startupChat = projectChat()
 }
 if (startupChat) {

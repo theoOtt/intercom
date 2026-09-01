@@ -16,6 +16,7 @@ const temp = mkdtempSync(join(tmpdir(), 'intercom-claude-live-'))
 const dbPath = join(temp, 'chat.db')
 const configPath = join(temp, 'mcp.json')
 const bridgePath = resolve('bridge/bridge.mjs')
+const pluginMode = process.env.INTERCOM_TEST_CLAUDE_PLUGIN === '1'
 const sessionId = randomUUID()
 const chat = `claude-identity-${sessionId}`
 writeFileSync(configPath, `${JSON.stringify({
@@ -29,21 +30,30 @@ writeFileSync(configPath, `${JSON.stringify({
 }, null, 2)}\n`)
 
 function runClaude(sessionArgs, body) {
+  const integrationArgs = pluginMode
+    ? ['--channels', 'plugin:intercom@intercom', '--tools', 'default']
+    : [
+        '--mcp-config', configPath,
+        '--strict-mcp-config',
+        '--dangerously-load-development-channels', 'server:intercom',
+        '--tools', 'mcp__intercom__send',
+      ]
   const args = [
     '-p',
     ...sessionArgs,
-    '--mcp-config', configPath,
-    '--strict-mcp-config',
-    '--dangerously-load-development-channels', 'server:intercom',
+    ...integrationArgs,
     '--permission-mode', 'bypassPermissions',
-    '--tools', 'mcp__intercom__send',
     '--model', 'haiku',
     '--max-budget-usd', '0.20',
     '--output-format', 'json',
     `Call the Intercom send tool exactly once with chat "${chat}" and body "${body}". Do nothing else.`,
   ]
   return new Promise((resolvePromise, reject) => {
-    const child = spawn('claude', args, { cwd: process.cwd(), stdio: ['ignore', 'pipe', 'pipe'] })
+    const child = spawn('claude', args, {
+      cwd: process.cwd(),
+      env: { ...process.env, CHAT_DB: dbPath, CHAT: chat, SEAT: 'claude-test' },
+      stdio: ['ignore', 'pipe', 'pipe'],
+    })
     let stdout = ''
     let stderr = ''
     const timer = setTimeout(() => {
@@ -73,7 +83,10 @@ try {
   if (rows.some((row) => row.sender_identity !== expected)) {
     throw new Error(`Expected both messages from ${expected}, observed ${JSON.stringify(rows)}`)
   }
-  process.stdout.write('PASS: a resumed Claude Code session retained its UUID-backed Intercom identity\n')
+  process.stdout.write(
+    `PASS: a resumed Claude Code session retained its UUID-backed Intercom identity` +
+    (pluginMode ? ' through the marketplace channel plugin' : '') + '\n'
+  )
 } finally {
   rmSync(temp, { recursive: true, force: true, maxRetries: 3, retryDelay: 50 })
 }

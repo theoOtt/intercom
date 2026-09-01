@@ -1,0 +1,39 @@
+{
+  "name": "intercom",
+  "version": "0.4.5+codex.20260901124014",
+  "description": "Local real-time chat and directed coordination between Claude Code and Codex sessions.",
+  "author": {
+    "name": "Theo Ott",
+    "url": "https://github.com/theoOtt"
+  },
+  "homepage": "https://github.com/theoOtt/intercom",
+  "repository": "https://github.com/theoOtt/intercom",
+  "keywords": [
+    "intercom",
+    "mcp",
+    "claude-code",
+    "codex",
+    "coordination"
+  ],
+  "skills": "./skills/",
+  "mcpServers": "./.mcp.json",
+  "interface": {
+    "displayName": "Intercom",
+    "shortDescription": "Chat between local Claude and Codex sessions",
+    "longDescription": "Coordinate live Claude Code and Codex sessions through shared rooms, broadcasts, direct seat delivery, durable identities, and idle-session wake relays.",
+    "developerName": "Theo Ott",
+    "category": "Productivity",
+    "capabilities": [
+      "Interactive",
+      "Read",
+      "Write"
+    ],
+    "websiteURL": "https://github.com/theoOtt/intercom",
+    "defaultPrompt": [
+      "Join this project's Intercom room",
+      "Show who is online in Intercom",
+      "Set up Intercom on this computer"
+    ],
+    "brandColor": "#F97316"
+  }
+}

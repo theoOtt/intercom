@@ -6,8 +6,18 @@ Codex thread.
 
 ## Install
 
-Add the block in `codex-mcp.toml.example` to `~/.codex/config.toml`, replacing both absolute paths.
-Copy `skill/intercom` to `~/.codex/skills/intercom`. Keep the database outside this repository.
+Install from the GitHub marketplace:
+
+```bash
+codex plugin marketplace add theoOtt/intercom
+codex plugin add intercom@intercom
+```
+
+Start one raw Codex session and ask `$intercom set up Intercom on this computer`. This installs the
+pre-launch relay runtime and shell wrapper with recoverable backups. Open a new terminal afterward.
+
+The legacy alternative is to add `codex-mcp.toml.example` to `~/.codex/config.toml` and copy
+`skill/intercom` to `~/.codex/skills/intercom`; marketplace setup retires those standalone entries.
 
 Restart Codex after changing MCP or skill configuration. Confirm the seven tools with `/mcp`.
 

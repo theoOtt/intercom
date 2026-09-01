@@ -13,7 +13,8 @@ session into a turn, no polling). Replaces the old bash-watcher + `.md` file app
 - It exposes tools: `join`, `leave`, `chats`, `send`, `history`, `who`, `rename`.
 - `send` supports broadcasts and direct delivery to one exact live seat. Direct visibility is
   bound to the resumable agent session UUID, so reusing a display label cannot leak old messages.
-- All messages/seats/cursors/presence live in one **shared SQLite file** (`CHAT_DB`).
+- All messages/seats/cursors/presence live in one **shared SQLite file**. `CHAT_DB` may override
+  its path; marketplace plugins default to `~/.claude/intercom/chat.db` in both products.
   No Redis, no daemon. Every session points at the same file.
 - A session can be in **many chats at once** and join/leave at **runtime**.
 

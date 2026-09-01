@@ -3,22 +3,39 @@ import { Client } from '@modelcontextprotocol/sdk/client/index.js'
 import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js'
 import { mkdtempSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
-import { join, resolve } from 'node:path'
+import { dirname, join, resolve } from 'node:path'
+import { fileURLToPath } from 'node:url'
 import { openDb, listSeats, getDeliveryCursor } from './chat-db.mjs'
 
 const temp = mkdtempSync(join(tmpdir(), 'intercom-mcp-'))
-const dbPath = join(temp, 'chat.db')
-const bridgePath = resolve('bridge/bridge.mjs')
+const useDefaultDb = process.env.INTERCOM_TEST_DEFAULT_DB === '1'
+const dbPath = useDefaultDb
+  ? join(temp, '.claude', 'intercom', 'chat.db')
+  : join(temp, 'chat.db')
+const bridgePath = process.env.INTERCOM_BRIDGE_PATH
+  ? resolve(process.env.INTERCOM_BRIDGE_PATH)
+  : join(dirname(fileURLToPath(import.meta.url)), 'bridge.mjs')
 
 async function session(name, identity) {
   const client = new Client({ name: `test-${name}`, version: '1.0.0' })
   const transport = new StdioClientTransport({
     command: 'node',
     args: [bridgePath],
-    env: { ...process.env, CHAT_DB: dbPath, CHAT_IDENTITY: identity },
-    stderr: 'pipe',
+    env: {
+      ...process.env,
+      HOME: useDefaultDb ? temp : process.env.HOME,
+      ...(useDefaultDb ? {} : { CHAT_DB: dbPath }),
+      CHAT_IDENTITY: identity,
+    },
+    stderr: process.env.INTERCOM_TEST_STDERR === '1' ? 'inherit' : 'pipe',
   })
-  await client.connect(transport)
+  let stderr = ''
+  transport.stderr?.on('data', (chunk) => { stderr += chunk })
+  try {
+    await client.connect(transport)
+  } catch (error) {
+    throw new Error(`session ${name} failed to connect: ${error.message}\n${stderr}`)
+  }
   return { client, transport }
 }
 const text = (result) => result.content?.find((item) => item.type === 'text')?.text || ''
