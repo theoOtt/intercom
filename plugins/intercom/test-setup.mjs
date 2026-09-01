@@ -17,6 +17,7 @@ const codexHome = join(temp, '.codex')
 const claudeHome = join(temp, '.claude')
 const zshrc = join(temp, '.zshrc')
 const setup = resolve('plugins/intercom/scripts/setup.mjs')
+const codexAvailable = spawnSync('codex', ['--version'], { encoding: 'utf8', stdio: 'pipe' }).status === 0
 const assert = (condition, message) => {
   if (!condition) throw new Error(`FAIL: ${message}`)
   process.stdout.write(`PASS: ${message}\n`)
@@ -62,7 +63,11 @@ try {
   const config = readFileSync(join(codexHome, 'config.toml'), 'utf8')
   assert(config.includes('model = "gpt-5.6-sol"'), 'setup preserves unrelated Codex settings')
   assert(config.includes('model_context_window = 1000000'), 'setup preserves context-window settings')
-  assert(!config.includes('[mcp_servers.intercom]'), 'setup removes only the legacy Intercom MCP entry')
+  if (codexAvailable) {
+    assert(!config.includes('[mcp_servers.intercom]'), 'setup removes only the legacy Intercom MCP entry')
+  } else {
+    assert(config.includes('[mcp_servers.intercom]'), 'setup leaves the legacy Intercom MCP entry alone when codex is not runnable')
+  }
 
   const shellFile = join(temp, '.config', 'intercom', 'shell.zsh')
   const shell = readFileSync(shellFile, 'utf8')

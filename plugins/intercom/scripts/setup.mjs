@@ -45,6 +45,10 @@ function backupAndMoveDirectory(path) {
   return target
 }
 
+function hasCommand(command) {
+  return spawnSync(command, ['--version'], { encoding: 'utf8', stdio: 'pipe' }).status === 0
+}
+
 function run(command, args) {
   const result = spawnSync(command, args, { encoding: 'utf8', stdio: 'pipe' })
   if (result.status !== 0) {
@@ -89,6 +93,12 @@ function removeLegacyCodexMcp() {
   // `codex mcp get intercom` also sees the newly installed plugin server. Only
   // invoke the config mutator when a legacy top-level TOML entry actually exists.
   if (!/^\[mcp_servers\.intercom\]/m.test(config)) return
+  // Only codex itself can safely rewrite its config. Without a runnable binary
+  // (not installed, or blocked by Gatekeeper) leave the entry for a later run.
+  if (!hasCommand('codex')) {
+    console.log(`codex is not runnable; leaving the legacy [mcp_servers.intercom] entry in ${configPath}`)
+    return
+  }
   backupFile(configPath)
   run('codex', ['mcp', 'remove', 'intercom'])
 }
