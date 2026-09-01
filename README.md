@@ -63,9 +63,15 @@ setup once from either product so ordinary `claude` enables the channel and ordi
 $intercom set up Intercom on this computer
 
 # Or launch Claude once with the channel and run:
-claude --channels plugin:intercom@intercom
+claude --dangerously-load-development-channels plugin:intercom@intercom
 /intercom:setup
 ```
+
+Intercom needs the development flag rather than `--channels`: Claude Code only registers
+`--channels plugin:...` entries that are on Anthropic's approved channels allowlist (the official
+Discord/Telegram/iMessage plugins). Anything else is skipped silently -- the MCP tools still work
+but idle-wake never fires. The setup command writes the development flag into the `claude`
+wrapper for the same reason; expect its confirmation dialog at startup.
 
 Setup preserves the existing SQLite database, backs up and retires legacy standalone Intercom
 skills/config, installs a stable runtime under `~/.local/share/intercom`, and sources

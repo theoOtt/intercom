@@ -66,7 +66,7 @@ try {
 
   const shellFile = join(temp, '.config', 'intercom', 'shell.zsh')
   const shell = readFileSync(shellFile, 'utf8')
-  assert(shell.includes('--channels plugin:intercom@intercom'), 'Claude wrapper enables the installed channel plugin')
+  assert(shell.includes('--dangerously-load-development-channels plugin:intercom@intercom'), 'Claude wrapper enables the installed channel plugin via the development flag')
   assert(shell.includes('.local/share/intercom/codex/launch.mjs'), 'Codex wrapper uses the stable relay runtime')
   const syntax = spawnSync('zsh', ['-n', shellFile])
   assert(syntax.status === 0, 'generated zsh integration is syntactically valid')

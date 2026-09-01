@@ -110,11 +110,15 @@ function installShellIntegration() {
     `    *) return 1 ;;\n` +
     `  esac\n` +
     `}\n` +
+  // --channels only accepts plugins on Anthropic's approved channels allowlist
+  // (tengu_harbor_ledger: the official discord/telegram/imessage plugins). Any other
+  // marketplace is silently skipped and idle-wake never fires, so a personal plugin
+  // has to go through the development flag.
     `claude() {\n` +
     `  if _intercom_claude_passthrough "$@"; then\n` +
     `    command claude "$@"\n` +
     `  else\n` +
-    `    command claude --channels plugin:intercom@intercom "$@"\n` +
+    `    command claude --dangerously-load-development-channels plugin:intercom@intercom "$@"\n` +
     `  fi\n` +
     `}\n` +
     `_intercom_codex_passthrough() {\n` +
