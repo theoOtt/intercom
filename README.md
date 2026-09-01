@@ -89,8 +89,11 @@ claude plugin update intercom@intercom
 
 `claude plugin update` compares the manifest version, not the git commit, and reports "already at
 the latest version" when it matches. Every change that should reach installed machines has to bump
-the version in `plugins/intercom/.claude-plugin/plugin.json`, `plugins/intercom/.codex-plugin/plugin.json`
-and `bridge/package.json`.
+the version, which lives in three files. Use the bump script so they stay in step:
+
+```bash
+cd bridge && yarn bump patch      # or minor, major, or an explicit x.y.z; add --dry-run to preview
+```
 
 After an update, run the setup skill/command once to refresh the pre-launch runtime, then start new
 agent sessions.

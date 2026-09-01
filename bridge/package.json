@@ -6,7 +6,8 @@
   "description": "Claude Code and Codex multi-session chat over a shared SQLite file.",
   "scripts": {
     "test": "node --no-warnings test-db.mjs && node --no-warnings test-mcp.mjs",
-    "build:plugin": "node build-plugin.mjs"
+    "build:plugin": "node build-plugin.mjs",
+    "bump": "node bump-version.mjs"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "1.29.0"
