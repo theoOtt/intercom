@@ -1,6 +1,6 @@
 {
   "name": "session-chat-bridge",
-  "version": "0.4.5",
+  "version": "0.4.6",
   "private": true,
   "type": "module",
   "description": "Claude Code and Codex multi-session chat over a shared SQLite file.",
