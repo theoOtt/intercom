@@ -33,9 +33,9 @@ var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__ge
   mod
 ));
 
-// node_modules/ajv/dist/compile/codegen/code.js
+// bridge/node_modules/ajv/dist/compile/codegen/code.js
 var require_code = __commonJS({
-  "node_modules/ajv/dist/compile/codegen/code.js"(exports) {
+  "bridge/node_modules/ajv/dist/compile/codegen/code.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.regexpCode = exports.getEsmExportName = exports.getProperty = exports.safeStringify = exports.stringify = exports.strConcat = exports.addCodeArg = exports.str = exports._ = exports.nil = exports._Code = exports.Name = exports.IDENTIFIER = exports._CodeOrName = void 0;
@@ -187,9 +187,9 @@ var require_code = __commonJS({
   }
 });
 
-// node_modules/ajv/dist/compile/codegen/scope.js
+// bridge/node_modules/ajv/dist/compile/codegen/scope.js
 var require_scope = __commonJS({
-  "node_modules/ajv/dist/compile/codegen/scope.js"(exports) {
+  "bridge/node_modules/ajv/dist/compile/codegen/scope.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.ValueScope = exports.ValueScopeName = exports.Scope = exports.varKinds = exports.UsedValueState = void 0;
@@ -332,9 +332,9 @@ var require_scope = __commonJS({
   }
 });
 
-// node_modules/ajv/dist/compile/codegen/index.js
+// bridge/node_modules/ajv/dist/compile/codegen/index.js
 var require_codegen = __commonJS({
-  "node_modules/ajv/dist/compile/codegen/index.js"(exports) {
+  "bridge/node_modules/ajv/dist/compile/codegen/index.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.or = exports.and = exports.not = exports.CodeGen = exports.operators = exports.varKinds = exports.ValueScopeName = exports.ValueScope = exports.Scope = exports.Name = exports.regexpCode = exports.stringify = exports.getProperty = exports.nil = exports.strConcat = exports.str = exports._ = void 0;
@@ -1052,9 +1052,9 @@ var require_codegen = __commonJS({
   }
 });
 
-// node_modules/ajv/dist/compile/util.js
+// bridge/node_modules/ajv/dist/compile/util.js
 var require_util = __commonJS({
-  "node_modules/ajv/dist/compile/util.js"(exports) {
+  "bridge/node_modules/ajv/dist/compile/util.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.checkStrictMode = exports.getErrorPath = exports.Type = exports.useFunc = exports.setEvaluated = exports.evaluatedPropsToName = exports.mergeEvaluated = exports.eachItem = exports.unescapeJsonPointer = exports.escapeJsonPointer = exports.escapeFragment = exports.unescapeFragment = exports.schemaRefOrVal = exports.schemaHasRulesButRef = exports.schemaHasRules = exports.checkUnknownRules = exports.alwaysValidSchema = exports.toHash = void 0;
@@ -1219,9 +1219,9 @@ var require_util = __commonJS({
   }
 });
 
-// node_modules/ajv/dist/compile/names.js
+// bridge/node_modules/ajv/dist/compile/names.js
 var require_names = __commonJS({
-  "node_modules/ajv/dist/compile/names.js"(exports) {
+  "bridge/node_modules/ajv/dist/compile/names.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var codegen_1 = require_codegen();
@@ -1258,9 +1258,9 @@ var require_names = __commonJS({
   }
 });
 
-// node_modules/ajv/dist/compile/errors.js
+// bridge/node_modules/ajv/dist/compile/errors.js
 var require_errors = __commonJS({
-  "node_modules/ajv/dist/compile/errors.js"(exports) {
+  "bridge/node_modules/ajv/dist/compile/errors.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.extendErrors = exports.resetErrorsCount = exports.reportExtraError = exports.reportError = exports.keyword$DataError = exports.keywordError = void 0;
@@ -1380,9 +1380,9 @@ var require_errors = __commonJS({
   }
 });
 
-// node_modules/ajv/dist/compile/validate/boolSchema.js
+// bridge/node_modules/ajv/dist/compile/validate/boolSchema.js
 var require_boolSchema = __commonJS({
-  "node_modules/ajv/dist/compile/validate/boolSchema.js"(exports) {
+  "bridge/node_modules/ajv/dist/compile/validate/boolSchema.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.boolOrEmptySchema = exports.topBoolOrEmptySchema = void 0;
@@ -1431,9 +1431,9 @@ var require_boolSchema = __commonJS({
   }
 });
 
-// node_modules/ajv/dist/compile/rules.js
+// bridge/node_modules/ajv/dist/compile/rules.js
 var require_rules = __commonJS({
-  "node_modules/ajv/dist/compile/rules.js"(exports) {
+  "bridge/node_modules/ajv/dist/compile/rules.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.getRules = exports.isJSONType = void 0;
@@ -1462,9 +1462,9 @@ var require_rules = __commonJS({
   }
 });
 
-// node_modules/ajv/dist/compile/validate/applicability.js
+// bridge/node_modules/ajv/dist/compile/validate/applicability.js
 var require_applicability = __commonJS({
-  "node_modules/ajv/dist/compile/validate/applicability.js"(exports) {
+  "bridge/node_modules/ajv/dist/compile/validate/applicability.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.shouldUseRule = exports.shouldUseGroup = exports.schemaHasRulesForType = void 0;
@@ -1485,9 +1485,9 @@ var require_applicability = __commonJS({
   }
 });
 
-// node_modules/ajv/dist/compile/validate/dataType.js
+// bridge/node_modules/ajv/dist/compile/validate/dataType.js
 var require_dataType = __commonJS({
-  "node_modules/ajv/dist/compile/validate/dataType.js"(exports) {
+  "bridge/node_modules/ajv/dist/compile/validate/dataType.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.reportTypeError = exports.checkDataTypes = exports.checkDataType = exports.coerceAndCheckDataType = exports.getJSONTypes = exports.getSchemaTypes = exports.DataType = void 0;
@@ -1669,9 +1669,9 @@ var require_dataType = __commonJS({
   }
 });
 
-// node_modules/ajv/dist/compile/validate/defaults.js
+// bridge/node_modules/ajv/dist/compile/validate/defaults.js
 var require_defaults = __commonJS({
-  "node_modules/ajv/dist/compile/validate/defaults.js"(exports) {
+  "bridge/node_modules/ajv/dist/compile/validate/defaults.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.assignDefaults = void 0;
@@ -1706,9 +1706,9 @@ var require_defaults = __commonJS({
   }
 });
 
-// node_modules/ajv/dist/vocabularies/code.js
+// bridge/node_modules/ajv/dist/vocabularies/code.js
 var require_code2 = __commonJS({
-  "node_modules/ajv/dist/vocabularies/code.js"(exports) {
+  "bridge/node_modules/ajv/dist/vocabularies/code.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.validateUnion = exports.validateArray = exports.usePattern = exports.callValidateCode = exports.schemaProperties = exports.allSchemaProperties = exports.noPropertyInData = exports.propertyInData = exports.isOwnProperty = exports.hasPropFunc = exports.reportMissingProp = exports.checkMissingProp = exports.checkReportMissingProp = void 0;
@@ -1839,9 +1839,9 @@ var require_code2 = __commonJS({
   }
 });
 
-// node_modules/ajv/dist/compile/validate/keyword.js
+// bridge/node_modules/ajv/dist/compile/validate/keyword.js
 var require_keyword = __commonJS({
-  "node_modules/ajv/dist/compile/validate/keyword.js"(exports) {
+  "bridge/node_modules/ajv/dist/compile/validate/keyword.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.validateKeywordUsage = exports.validSchemaType = exports.funcKeywordCode = exports.macroKeywordCode = void 0;
@@ -1957,9 +1957,9 @@ var require_keyword = __commonJS({
   }
 });
 
-// node_modules/ajv/dist/compile/validate/subschema.js
+// bridge/node_modules/ajv/dist/compile/validate/subschema.js
 var require_subschema = __commonJS({
-  "node_modules/ajv/dist/compile/validate/subschema.js"(exports) {
+  "bridge/node_modules/ajv/dist/compile/validate/subschema.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.extendSubschemaMode = exports.extendSubschemaData = exports.getSubschema = void 0;
@@ -2040,9 +2040,9 @@ var require_subschema = __commonJS({
   }
 });
 
-// node_modules/fast-deep-equal/index.js
+// bridge/node_modules/fast-deep-equal/index.js
 var require_fast_deep_equal = __commonJS({
-  "node_modules/fast-deep-equal/index.js"(exports, module) {
+  "bridge/node_modules/fast-deep-equal/index.js"(exports, module) {
     "use strict";
     module.exports = function equal(a, b) {
       if (a === b) return true;
@@ -2075,9 +2075,9 @@ var require_fast_deep_equal = __commonJS({
   }
 });
 
-// node_modules/json-schema-traverse/index.js
+// bridge/node_modules/json-schema-traverse/index.js
 var require_json_schema_traverse = __commonJS({
-  "node_modules/json-schema-traverse/index.js"(exports, module) {
+  "bridge/node_modules/json-schema-traverse/index.js"(exports, module) {
     "use strict";
     var traverse = module.exports = function(schema, opts, cb) {
       if (typeof opts == "function") {
@@ -2163,9 +2163,9 @@ var require_json_schema_traverse = __commonJS({
   }
 });
 
-// node_modules/ajv/dist/compile/resolve.js
+// bridge/node_modules/ajv/dist/compile/resolve.js
 var require_resolve = __commonJS({
-  "node_modules/ajv/dist/compile/resolve.js"(exports) {
+  "bridge/node_modules/ajv/dist/compile/resolve.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.getSchemaRefs = exports.resolveUrl = exports.normalizeId = exports._getFullPath = exports.getFullPath = exports.inlineRef = void 0;
@@ -2319,9 +2319,9 @@ var require_resolve = __commonJS({
   }
 });
 
-// node_modules/ajv/dist/compile/validate/index.js
+// bridge/node_modules/ajv/dist/compile/validate/index.js
 var require_validate = __commonJS({
-  "node_modules/ajv/dist/compile/validate/index.js"(exports) {
+  "bridge/node_modules/ajv/dist/compile/validate/index.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.getData = exports.KeywordCxt = exports.validateFunctionCode = void 0;
@@ -2827,9 +2827,9 @@ var require_validate = __commonJS({
   }
 });
 
-// node_modules/ajv/dist/runtime/validation_error.js
+// bridge/node_modules/ajv/dist/runtime/validation_error.js
 var require_validation_error = __commonJS({
-  "node_modules/ajv/dist/runtime/validation_error.js"(exports) {
+  "bridge/node_modules/ajv/dist/runtime/validation_error.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var ValidationError = class extends Error {
@@ -2843,9 +2843,9 @@ var require_validation_error = __commonJS({
   }
 });
 
-// node_modules/ajv/dist/compile/ref_error.js
+// bridge/node_modules/ajv/dist/compile/ref_error.js
 var require_ref_error = __commonJS({
-  "node_modules/ajv/dist/compile/ref_error.js"(exports) {
+  "bridge/node_modules/ajv/dist/compile/ref_error.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var resolve_1 = require_resolve();
@@ -2860,9 +2860,9 @@ var require_ref_error = __commonJS({
   }
 });
 
-// node_modules/ajv/dist/compile/index.js
+// bridge/node_modules/ajv/dist/compile/index.js
 var require_compile = __commonJS({
-  "node_modules/ajv/dist/compile/index.js"(exports) {
+  "bridge/node_modules/ajv/dist/compile/index.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.resolveSchema = exports.getCompilingSchema = exports.resolveRef = exports.compileSchema = exports.SchemaEnv = void 0;
@@ -3084,9 +3084,9 @@ var require_compile = __commonJS({
   }
 });
 
-// node_modules/ajv/dist/refs/data.json
+// bridge/node_modules/ajv/dist/refs/data.json
 var require_data = __commonJS({
-  "node_modules/ajv/dist/refs/data.json"(exports, module) {
+  "bridge/node_modules/ajv/dist/refs/data.json"(exports, module) {
     module.exports = {
       $id: "https://raw.githubusercontent.com/ajv-validator/ajv/master/lib/refs/data.json#",
       description: "Meta-schema for $data reference (JSON AnySchema extension proposal)",
@@ -3103,9 +3103,9 @@ var require_data = __commonJS({
   }
 });
 
-// node_modules/fast-uri/lib/utils.js
+// bridge/node_modules/fast-uri/lib/utils.js
 var require_utils = __commonJS({
-  "node_modules/fast-uri/lib/utils.js"(exports, module) {
+  "bridge/node_modules/fast-uri/lib/utils.js"(exports, module) {
     "use strict";
     var isUUID = RegExp.prototype.test.bind(/^[\da-f]{8}-[\da-f]{4}-[\da-f]{4}-[\da-f]{4}-[\da-f]{12}$/iu);
     var isIPv4 = RegExp.prototype.test.bind(/^(?:(?:25[0-5]|2[0-4]\d|1\d{2}|[1-9]\d|\d)\.){3}(?:25[0-5]|2[0-4]\d|1\d{2}|[1-9]\d|\d)$/u);
@@ -3600,9 +3600,9 @@ var require_utils = __commonJS({
   }
 });
 
-// node_modules/fast-uri/lib/schemes.js
+// bridge/node_modules/fast-uri/lib/schemes.js
 var require_schemes = __commonJS({
-  "node_modules/fast-uri/lib/schemes.js"(exports, module) {
+  "bridge/node_modules/fast-uri/lib/schemes.js"(exports, module) {
     "use strict";
     var { isUUID } = require_utils();
     var URN_REG = /^([\da-z][\d\-a-z]{0,31}):((?:[\w!$'()*+,\-./:;=@]|%[\da-f]{2})+)$/iu;
@@ -3811,9 +3811,9 @@ var require_schemes = __commonJS({
   }
 });
 
-// node_modules/fast-uri/index.js
+// bridge/node_modules/fast-uri/index.js
 var require_fast_uri = __commonJS({
-  "node_modules/fast-uri/index.js"(exports, module) {
+  "bridge/node_modules/fast-uri/index.js"(exports, module) {
     "use strict";
     var { normalizeIPv6, removeDotSegments, recomposeAuthority, normalizePercentEncoding, normalizePathEncoding, serializePathEncoding, normalizeQueryFragmentEncoding, encodeQuery, encodeFragment, reescapeHostDelimiters, isIPv4, nonSimpleDomain } = require_utils();
     var { SCHEMES, getSchemeHandler } = require_schemes();
@@ -4210,9 +4210,9 @@ var require_fast_uri = __commonJS({
   }
 });
 
-// node_modules/ajv/dist/runtime/uri.js
+// bridge/node_modules/ajv/dist/runtime/uri.js
 var require_uri = __commonJS({
-  "node_modules/ajv/dist/runtime/uri.js"(exports) {
+  "bridge/node_modules/ajv/dist/runtime/uri.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var uri = require_fast_uri();
@@ -4221,9 +4221,9 @@ var require_uri = __commonJS({
   }
 });
 
-// node_modules/ajv/dist/core.js
+// bridge/node_modules/ajv/dist/core.js
 var require_core = __commonJS({
-  "node_modules/ajv/dist/core.js"(exports) {
+  "bridge/node_modules/ajv/dist/core.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.CodeGen = exports.Name = exports.nil = exports.stringify = exports.str = exports._ = exports.KeywordCxt = void 0;
@@ -4832,9 +4832,9 @@ var require_core = __commonJS({
   }
 });
 
-// node_modules/ajv/dist/vocabularies/core/id.js
+// bridge/node_modules/ajv/dist/vocabularies/core/id.js
 var require_id = __commonJS({
-  "node_modules/ajv/dist/vocabularies/core/id.js"(exports) {
+  "bridge/node_modules/ajv/dist/vocabularies/core/id.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var def = {
@@ -4847,9 +4847,9 @@ var require_id = __commonJS({
   }
 });
 
-// node_modules/ajv/dist/vocabularies/core/ref.js
+// bridge/node_modules/ajv/dist/vocabularies/core/ref.js
 var require_ref = __commonJS({
-  "node_modules/ajv/dist/vocabularies/core/ref.js"(exports) {
+  "bridge/node_modules/ajv/dist/vocabularies/core/ref.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.callRef = exports.getValidate = void 0;
@@ -4969,9 +4969,9 @@ var require_ref = __commonJS({
   }
 });
 
-// node_modules/ajv/dist/vocabularies/core/index.js
+// bridge/node_modules/ajv/dist/vocabularies/core/index.js
 var require_core2 = __commonJS({
-  "node_modules/ajv/dist/vocabularies/core/index.js"(exports) {
+  "bridge/node_modules/ajv/dist/vocabularies/core/index.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var id_1 = require_id();
@@ -4990,9 +4990,9 @@ var require_core2 = __commonJS({
   }
 });
 
-// node_modules/ajv/dist/vocabularies/validation/limitNumber.js
+// bridge/node_modules/ajv/dist/vocabularies/validation/limitNumber.js
 var require_limitNumber = __commonJS({
-  "node_modules/ajv/dist/vocabularies/validation/limitNumber.js"(exports) {
+  "bridge/node_modules/ajv/dist/vocabularies/validation/limitNumber.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var codegen_1 = require_codegen();
@@ -5022,9 +5022,9 @@ var require_limitNumber = __commonJS({
   }
 });
 
-// node_modules/ajv/dist/vocabularies/validation/multipleOf.js
+// bridge/node_modules/ajv/dist/vocabularies/validation/multipleOf.js
 var require_multipleOf = __commonJS({
-  "node_modules/ajv/dist/vocabularies/validation/multipleOf.js"(exports) {
+  "bridge/node_modules/ajv/dist/vocabularies/validation/multipleOf.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var codegen_1 = require_codegen();
@@ -5050,9 +5050,9 @@ var require_multipleOf = __commonJS({
   }
 });
 
-// node_modules/ajv/dist/runtime/ucs2length.js
+// bridge/node_modules/ajv/dist/runtime/ucs2length.js
 var require_ucs2length = __commonJS({
-  "node_modules/ajv/dist/runtime/ucs2length.js"(exports) {
+  "bridge/node_modules/ajv/dist/runtime/ucs2length.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     function ucs2length(str) {
@@ -5076,9 +5076,9 @@ var require_ucs2length = __commonJS({
   }
 });
 
-// node_modules/ajv/dist/vocabularies/validation/limitLength.js
+// bridge/node_modules/ajv/dist/vocabularies/validation/limitLength.js
 var require_limitLength = __commonJS({
-  "node_modules/ajv/dist/vocabularies/validation/limitLength.js"(exports) {
+  "bridge/node_modules/ajv/dist/vocabularies/validation/limitLength.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var codegen_1 = require_codegen();
@@ -5108,9 +5108,9 @@ var require_limitLength = __commonJS({
   }
 });
 
-// node_modules/ajv/dist/vocabularies/validation/pattern.js
+// bridge/node_modules/ajv/dist/vocabularies/validation/pattern.js
 var require_pattern = __commonJS({
-  "node_modules/ajv/dist/vocabularies/validation/pattern.js"(exports) {
+  "bridge/node_modules/ajv/dist/vocabularies/validation/pattern.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var code_1 = require_code2();
@@ -5145,9 +5145,9 @@ var require_pattern = __commonJS({
   }
 });
 
-// node_modules/ajv/dist/vocabularies/validation/limitProperties.js
+// bridge/node_modules/ajv/dist/vocabularies/validation/limitProperties.js
 var require_limitProperties = __commonJS({
-  "node_modules/ajv/dist/vocabularies/validation/limitProperties.js"(exports) {
+  "bridge/node_modules/ajv/dist/vocabularies/validation/limitProperties.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var codegen_1 = require_codegen();
@@ -5174,9 +5174,9 @@ var require_limitProperties = __commonJS({
   }
 });
 
-// node_modules/ajv/dist/vocabularies/validation/required.js
+// bridge/node_modules/ajv/dist/vocabularies/validation/required.js
 var require_required = __commonJS({
-  "node_modules/ajv/dist/vocabularies/validation/required.js"(exports) {
+  "bridge/node_modules/ajv/dist/vocabularies/validation/required.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var code_1 = require_code2();
@@ -5256,9 +5256,9 @@ var require_required = __commonJS({
   }
 });
 
-// node_modules/ajv/dist/vocabularies/validation/limitItems.js
+// bridge/node_modules/ajv/dist/vocabularies/validation/limitItems.js
 var require_limitItems = __commonJS({
-  "node_modules/ajv/dist/vocabularies/validation/limitItems.js"(exports) {
+  "bridge/node_modules/ajv/dist/vocabularies/validation/limitItems.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var codegen_1 = require_codegen();
@@ -5285,9 +5285,9 @@ var require_limitItems = __commonJS({
   }
 });
 
-// node_modules/ajv/dist/runtime/equal.js
+// bridge/node_modules/ajv/dist/runtime/equal.js
 var require_equal = __commonJS({
-  "node_modules/ajv/dist/runtime/equal.js"(exports) {
+  "bridge/node_modules/ajv/dist/runtime/equal.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var equal = require_fast_deep_equal();
@@ -5296,9 +5296,9 @@ var require_equal = __commonJS({
   }
 });
 
-// node_modules/ajv/dist/vocabularies/validation/uniqueItems.js
+// bridge/node_modules/ajv/dist/vocabularies/validation/uniqueItems.js
 var require_uniqueItems = __commonJS({
-  "node_modules/ajv/dist/vocabularies/validation/uniqueItems.js"(exports) {
+  "bridge/node_modules/ajv/dist/vocabularies/validation/uniqueItems.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var dataType_1 = require_dataType();
@@ -5363,9 +5363,9 @@ var require_uniqueItems = __commonJS({
   }
 });
 
-// node_modules/ajv/dist/vocabularies/validation/const.js
+// bridge/node_modules/ajv/dist/vocabularies/validation/const.js
 var require_const = __commonJS({
-  "node_modules/ajv/dist/vocabularies/validation/const.js"(exports) {
+  "bridge/node_modules/ajv/dist/vocabularies/validation/const.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var codegen_1 = require_codegen();
@@ -5392,9 +5392,9 @@ var require_const = __commonJS({
   }
 });
 
-// node_modules/ajv/dist/vocabularies/validation/enum.js
+// bridge/node_modules/ajv/dist/vocabularies/validation/enum.js
 var require_enum = __commonJS({
-  "node_modules/ajv/dist/vocabularies/validation/enum.js"(exports) {
+  "bridge/node_modules/ajv/dist/vocabularies/validation/enum.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var codegen_1 = require_codegen();
@@ -5441,9 +5441,9 @@ var require_enum = __commonJS({
   }
 });
 
-// node_modules/ajv/dist/vocabularies/validation/index.js
+// bridge/node_modules/ajv/dist/vocabularies/validation/index.js
 var require_validation = __commonJS({
-  "node_modules/ajv/dist/vocabularies/validation/index.js"(exports) {
+  "bridge/node_modules/ajv/dist/vocabularies/validation/index.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var limitNumber_1 = require_limitNumber();
@@ -5479,9 +5479,9 @@ var require_validation = __commonJS({
   }
 });
 
-// node_modules/ajv/dist/vocabularies/applicator/additionalItems.js
+// bridge/node_modules/ajv/dist/vocabularies/applicator/additionalItems.js
 var require_additionalItems = __commonJS({
-  "node_modules/ajv/dist/vocabularies/applicator/additionalItems.js"(exports) {
+  "bridge/node_modules/ajv/dist/vocabularies/applicator/additionalItems.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.validateAdditionalItems = void 0;
@@ -5532,9 +5532,9 @@ var require_additionalItems = __commonJS({
   }
 });
 
-// node_modules/ajv/dist/vocabularies/applicator/items.js
+// bridge/node_modules/ajv/dist/vocabularies/applicator/items.js
 var require_items = __commonJS({
-  "node_modules/ajv/dist/vocabularies/applicator/items.js"(exports) {
+  "bridge/node_modules/ajv/dist/vocabularies/applicator/items.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.validateTuple = void 0;
@@ -5589,9 +5589,9 @@ var require_items = __commonJS({
   }
 });
 
-// node_modules/ajv/dist/vocabularies/applicator/prefixItems.js
+// bridge/node_modules/ajv/dist/vocabularies/applicator/prefixItems.js
 var require_prefixItems = __commonJS({
-  "node_modules/ajv/dist/vocabularies/applicator/prefixItems.js"(exports) {
+  "bridge/node_modules/ajv/dist/vocabularies/applicator/prefixItems.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var items_1 = require_items();
@@ -5606,9 +5606,9 @@ var require_prefixItems = __commonJS({
   }
 });
 
-// node_modules/ajv/dist/vocabularies/applicator/items2020.js
+// bridge/node_modules/ajv/dist/vocabularies/applicator/items2020.js
 var require_items2020 = __commonJS({
-  "node_modules/ajv/dist/vocabularies/applicator/items2020.js"(exports) {
+  "bridge/node_modules/ajv/dist/vocabularies/applicator/items2020.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var codegen_1 = require_codegen();
@@ -5641,9 +5641,9 @@ var require_items2020 = __commonJS({
   }
 });
 
-// node_modules/ajv/dist/vocabularies/applicator/contains.js
+// bridge/node_modules/ajv/dist/vocabularies/applicator/contains.js
 var require_contains = __commonJS({
-  "node_modules/ajv/dist/vocabularies/applicator/contains.js"(exports) {
+  "bridge/node_modules/ajv/dist/vocabularies/applicator/contains.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var codegen_1 = require_codegen();
@@ -5735,9 +5735,9 @@ var require_contains = __commonJS({
   }
 });
 
-// node_modules/ajv/dist/vocabularies/applicator/dependencies.js
+// bridge/node_modules/ajv/dist/vocabularies/applicator/dependencies.js
 var require_dependencies = __commonJS({
-  "node_modules/ajv/dist/vocabularies/applicator/dependencies.js"(exports) {
+  "bridge/node_modules/ajv/dist/vocabularies/applicator/dependencies.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.validateSchemaDeps = exports.validatePropertyDeps = exports.error = void 0;
@@ -5829,9 +5829,9 @@ var require_dependencies = __commonJS({
   }
 });
 
-// node_modules/ajv/dist/vocabularies/applicator/propertyNames.js
+// bridge/node_modules/ajv/dist/vocabularies/applicator/propertyNames.js
 var require_propertyNames = __commonJS({
-  "node_modules/ajv/dist/vocabularies/applicator/propertyNames.js"(exports) {
+  "bridge/node_modules/ajv/dist/vocabularies/applicator/propertyNames.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var codegen_1 = require_codegen();
@@ -5872,9 +5872,9 @@ var require_propertyNames = __commonJS({
   }
 });
 
-// node_modules/ajv/dist/vocabularies/applicator/additionalProperties.js
+// bridge/node_modules/ajv/dist/vocabularies/applicator/additionalProperties.js
 var require_additionalProperties = __commonJS({
-  "node_modules/ajv/dist/vocabularies/applicator/additionalProperties.js"(exports) {
+  "bridge/node_modules/ajv/dist/vocabularies/applicator/additionalProperties.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var code_1 = require_code2();
@@ -5978,9 +5978,9 @@ var require_additionalProperties = __commonJS({
   }
 });
 
-// node_modules/ajv/dist/vocabularies/applicator/properties.js
+// bridge/node_modules/ajv/dist/vocabularies/applicator/properties.js
 var require_properties = __commonJS({
-  "node_modules/ajv/dist/vocabularies/applicator/properties.js"(exports) {
+  "bridge/node_modules/ajv/dist/vocabularies/applicator/properties.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var validate_1 = require_validate();
@@ -6036,9 +6036,9 @@ var require_properties = __commonJS({
   }
 });
 
-// node_modules/ajv/dist/vocabularies/applicator/patternProperties.js
+// bridge/node_modules/ajv/dist/vocabularies/applicator/patternProperties.js
 var require_patternProperties = __commonJS({
-  "node_modules/ajv/dist/vocabularies/applicator/patternProperties.js"(exports) {
+  "bridge/node_modules/ajv/dist/vocabularies/applicator/patternProperties.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var code_1 = require_code2();
@@ -6110,9 +6110,9 @@ var require_patternProperties = __commonJS({
   }
 });
 
-// node_modules/ajv/dist/vocabularies/applicator/not.js
+// bridge/node_modules/ajv/dist/vocabularies/applicator/not.js
 var require_not = __commonJS({
-  "node_modules/ajv/dist/vocabularies/applicator/not.js"(exports) {
+  "bridge/node_modules/ajv/dist/vocabularies/applicator/not.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var util_1 = require_util();
@@ -6141,9 +6141,9 @@ var require_not = __commonJS({
   }
 });
 
-// node_modules/ajv/dist/vocabularies/applicator/anyOf.js
+// bridge/node_modules/ajv/dist/vocabularies/applicator/anyOf.js
 var require_anyOf = __commonJS({
-  "node_modules/ajv/dist/vocabularies/applicator/anyOf.js"(exports) {
+  "bridge/node_modules/ajv/dist/vocabularies/applicator/anyOf.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var code_1 = require_code2();
@@ -6158,9 +6158,9 @@ var require_anyOf = __commonJS({
   }
 });
 
-// node_modules/ajv/dist/vocabularies/applicator/oneOf.js
+// bridge/node_modules/ajv/dist/vocabularies/applicator/oneOf.js
 var require_oneOf = __commonJS({
-  "node_modules/ajv/dist/vocabularies/applicator/oneOf.js"(exports) {
+  "bridge/node_modules/ajv/dist/vocabularies/applicator/oneOf.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var codegen_1 = require_codegen();
@@ -6216,9 +6216,9 @@ var require_oneOf = __commonJS({
   }
 });
 
-// node_modules/ajv/dist/vocabularies/applicator/allOf.js
+// bridge/node_modules/ajv/dist/vocabularies/applicator/allOf.js
 var require_allOf = __commonJS({
-  "node_modules/ajv/dist/vocabularies/applicator/allOf.js"(exports) {
+  "bridge/node_modules/ajv/dist/vocabularies/applicator/allOf.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var util_1 = require_util();
@@ -6243,9 +6243,9 @@ var require_allOf = __commonJS({
   }
 });
 
-// node_modules/ajv/dist/vocabularies/applicator/if.js
+// bridge/node_modules/ajv/dist/vocabularies/applicator/if.js
 var require_if = __commonJS({
-  "node_modules/ajv/dist/vocabularies/applicator/if.js"(exports) {
+  "bridge/node_modules/ajv/dist/vocabularies/applicator/if.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var codegen_1 = require_codegen();
@@ -6312,9 +6312,9 @@ var require_if = __commonJS({
   }
 });
 
-// node_modules/ajv/dist/vocabularies/applicator/thenElse.js
+// bridge/node_modules/ajv/dist/vocabularies/applicator/thenElse.js
 var require_thenElse = __commonJS({
-  "node_modules/ajv/dist/vocabularies/applicator/thenElse.js"(exports) {
+  "bridge/node_modules/ajv/dist/vocabularies/applicator/thenElse.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var util_1 = require_util();
@@ -6330,9 +6330,9 @@ var require_thenElse = __commonJS({
   }
 });
 
-// node_modules/ajv/dist/vocabularies/applicator/index.js
+// bridge/node_modules/ajv/dist/vocabularies/applicator/index.js
 var require_applicator = __commonJS({
-  "node_modules/ajv/dist/vocabularies/applicator/index.js"(exports) {
+  "bridge/node_modules/ajv/dist/vocabularies/applicator/index.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var additionalItems_1 = require_additionalItems();
@@ -6378,9 +6378,9 @@ var require_applicator = __commonJS({
   }
 });
 
-// node_modules/ajv/dist/vocabularies/format/format.js
+// bridge/node_modules/ajv/dist/vocabularies/format/format.js
 var require_format = __commonJS({
-  "node_modules/ajv/dist/vocabularies/format/format.js"(exports) {
+  "bridge/node_modules/ajv/dist/vocabularies/format/format.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var codegen_1 = require_codegen();
@@ -6468,9 +6468,9 @@ var require_format = __commonJS({
   }
 });
 
-// node_modules/ajv/dist/vocabularies/format/index.js
+// bridge/node_modules/ajv/dist/vocabularies/format/index.js
 var require_format2 = __commonJS({
-  "node_modules/ajv/dist/vocabularies/format/index.js"(exports) {
+  "bridge/node_modules/ajv/dist/vocabularies/format/index.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var format_1 = require_format();
@@ -6479,9 +6479,9 @@ var require_format2 = __commonJS({
   }
 });
 
-// node_modules/ajv/dist/vocabularies/metadata.js
+// bridge/node_modules/ajv/dist/vocabularies/metadata.js
 var require_metadata = __commonJS({
-  "node_modules/ajv/dist/vocabularies/metadata.js"(exports) {
+  "bridge/node_modules/ajv/dist/vocabularies/metadata.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.contentVocabulary = exports.metadataVocabulary = void 0;
@@ -6502,9 +6502,9 @@ var require_metadata = __commonJS({
   }
 });
 
-// node_modules/ajv/dist/vocabularies/draft7.js
+// bridge/node_modules/ajv/dist/vocabularies/draft7.js
 var require_draft7 = __commonJS({
-  "node_modules/ajv/dist/vocabularies/draft7.js"(exports) {
+  "bridge/node_modules/ajv/dist/vocabularies/draft7.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var core_1 = require_core2();
@@ -6524,9 +6524,9 @@ var require_draft7 = __commonJS({
   }
 });
 
-// node_modules/ajv/dist/vocabularies/discriminator/types.js
+// bridge/node_modules/ajv/dist/vocabularies/discriminator/types.js
 var require_types = __commonJS({
-  "node_modules/ajv/dist/vocabularies/discriminator/types.js"(exports) {
+  "bridge/node_modules/ajv/dist/vocabularies/discriminator/types.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.DiscrError = void 0;
@@ -6538,9 +6538,9 @@ var require_types = __commonJS({
   }
 });
 
-// node_modules/ajv/dist/vocabularies/discriminator/index.js
+// bridge/node_modules/ajv/dist/vocabularies/discriminator/index.js
 var require_discriminator = __commonJS({
-  "node_modules/ajv/dist/vocabularies/discriminator/index.js"(exports) {
+  "bridge/node_modules/ajv/dist/vocabularies/discriminator/index.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var codegen_1 = require_codegen();
@@ -6643,9 +6643,9 @@ var require_discriminator = __commonJS({
   }
 });
 
-// node_modules/ajv/dist/refs/json-schema-draft-07.json
+// bridge/node_modules/ajv/dist/refs/json-schema-draft-07.json
 var require_json_schema_draft_07 = __commonJS({
-  "node_modules/ajv/dist/refs/json-schema-draft-07.json"(exports, module) {
+  "bridge/node_modules/ajv/dist/refs/json-schema-draft-07.json"(exports, module) {
     module.exports = {
       $schema: "http://json-schema.org/draft-07/schema#",
       $id: "http://json-schema.org/draft-07/schema#",
@@ -6800,9 +6800,9 @@ var require_json_schema_draft_07 = __commonJS({
   }
 });
 
-// node_modules/ajv/dist/ajv.js
+// bridge/node_modules/ajv/dist/ajv.js
 var require_ajv = __commonJS({
-  "node_modules/ajv/dist/ajv.js"(exports, module) {
+  "bridge/node_modules/ajv/dist/ajv.js"(exports, module) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.MissingRefError = exports.ValidationError = exports.CodeGen = exports.Name = exports.nil = exports.stringify = exports.str = exports._ = exports.KeywordCxt = exports.Ajv = void 0;
@@ -6870,9 +6870,9 @@ var require_ajv = __commonJS({
   }
 });
 
-// node_modules/ajv-formats/dist/formats.js
+// bridge/node_modules/ajv-formats/dist/formats.js
 var require_formats = __commonJS({
-  "node_modules/ajv-formats/dist/formats.js"(exports) {
+  "bridge/node_modules/ajv-formats/dist/formats.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.formatNames = exports.fastFormats = exports.fullFormats = void 0;
@@ -7073,9 +7073,9 @@ var require_formats = __commonJS({
   }
 });
 
-// node_modules/ajv-formats/dist/limit.js
+// bridge/node_modules/ajv-formats/dist/limit.js
 var require_limit = __commonJS({
-  "node_modules/ajv-formats/dist/limit.js"(exports) {
+  "bridge/node_modules/ajv-formats/dist/limit.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.formatLimitDefinition = void 0;
@@ -7145,9 +7145,9 @@ var require_limit = __commonJS({
   }
 });
 
-// node_modules/ajv-formats/dist/index.js
+// bridge/node_modules/ajv-formats/dist/index.js
 var require_dist = __commonJS({
-  "node_modules/ajv-formats/dist/index.js"(exports, module) {
+  "bridge/node_modules/ajv-formats/dist/index.js"(exports, module) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var formats_1 = require_formats();
@@ -7187,7 +7187,7 @@ var require_dist = __commonJS({
   }
 });
 
-// node_modules/zod/v4/core/util.js
+// bridge/node_modules/zod/v4/core/util.js
 var util_exports = {};
 __export(util_exports, {
   BIGINT_FORMAT_RANGES: () => BIGINT_FORMAT_RANGES,
@@ -8024,7 +8024,7 @@ function constantCatch(value) {
   return fn;
 }
 
-// node_modules/zod/v4/core/core.js
+// bridge/node_modules/zod/v4/core/core.js
 var _a;
 var _zodDesc = { value: void 0, enumerable: false };
 var _E = "captureStackTrace" in Error ? Error : null;
@@ -8143,7 +8143,7 @@ function config(newConfig) {
   return globalConfig;
 }
 
-// node_modules/zod/v4/core/errors.js
+// bridge/node_modules/zod/v4/core/errors.js
 function _getMessage() {
   const internals = this._zod;
   internals.message ?? (internals.message = JSON.stringify(internals.def, jsonStringifyReplacer, 2));
@@ -8262,7 +8262,7 @@ function formatError(error2, mapper = (issue2) => issue2.message) {
   return fieldErrors;
 }
 
-// node_modules/zod/v4/core/parse.js
+// bridge/node_modules/zod/v4/core/parse.js
 function finalizeParams(callee, params) {
   return { callee: params?.callee ?? callee, Err: params?.Err };
 }
@@ -8365,7 +8365,7 @@ var _safeDecodeAsync = (_Err) => async (schema, value, _ctx) => {
   return _safeParseAsync(_Err)(schema, value, _ctx);
 };
 
-// node_modules/zod/v4/core/regexes.js
+// bridge/node_modules/zod/v4/core/regexes.js
 var cuid = /^[cC][0-9a-z]{6,}$/;
 var cuid2 = /^[0-9a-z]+$/;
 var ulid = /^[0-7][0-9A-HJKMNP-TV-Za-hjkmnp-tv-z]{25}$/;
@@ -8427,7 +8427,7 @@ var _null = /^null$/i;
 var lowercase = /^[^A-Z]*$/;
 var uppercase = /^[^a-z]*$/;
 
-// node_modules/zod/v4/core/checks.js
+// bridge/node_modules/zod/v4/core/checks.js
 var $ZodCheck = /* @__PURE__ */ $constructor("$ZodCheck", (inst, def) => {
   var _a3;
   inst._zod ?? (inst._zod = {});
@@ -8818,7 +8818,7 @@ var $ZodCheckOverwrite = /* @__PURE__ */ $constructor("$ZodCheckOverwrite", (ins
   };
 });
 
-// node_modules/zod/v4/core/doc.js
+// bridge/node_modules/zod/v4/core/doc.js
 var Doc = class {
   constructor(args = [], closed = {}) {
     this.content = [];
@@ -8855,14 +8855,14 @@ ${content.join("\n")}
   }
 };
 
-// node_modules/zod/v4/core/versions.js
+// bridge/node_modules/zod/v4/core/versions.js
 var version = {
   major: 4,
   minor: 5,
   patch: 4
 };
 
-// node_modules/zod/v4/core/schemas.js
+// bridge/node_modules/zod/v4/core/schemas.js
 var $ZodType = /* @__PURE__ */ $constructor("$ZodType", (inst, def) => {
   var _a3;
   inst ?? (inst = {});
@@ -10450,7 +10450,7 @@ function handleRefineResult(result, payload, input, inst) {
   }
 }
 
-// node_modules/zod/v4/core/memoizer.js
+// bridge/node_modules/zod/v4/core/memoizer.js
 var $ZodCyclicError = class extends Error {
   constructor() {
     super(`Cannot parse a reference cycle that closes through a transform`);
@@ -10688,7 +10688,7 @@ function isBackEdge(ctx, value) {
   return backEdges !== void 0 && value !== null && typeof value === "object" && backEdges.has(value);
 }
 
-// node_modules/zod/v4/locales/en.js
+// bridge/node_modules/zod/v4/locales/en.js
 var error = () => {
   const Sizable = {
     string: { unit: "characters", verb: "to have" },
@@ -10811,7 +10811,7 @@ function en_default() {
   };
 }
 
-// node_modules/zod/v4/core/registries.js
+// bridge/node_modules/zod/v4/core/registries.js
 var _a2;
 var $ZodRegistry = class {
   constructor() {
@@ -10859,7 +10859,7 @@ function registry() {
 (_a2 = globalThis).__zod_globalRegistry ?? (_a2.__zod_globalRegistry = registry());
 var globalRegistry = globalThis.__zod_globalRegistry;
 
-// node_modules/zod/v4/core/api.js
+// bridge/node_modules/zod/v4/core/api.js
 // @__NO_SIDE_EFFECTS__
 function _string(Class2, params) {
   return new Class2({
@@ -11388,7 +11388,7 @@ function _check(fn, params) {
   return ch;
 }
 
-// node_modules/zod/v4/core/to-json-schema.js
+// bridge/node_modules/zod/v4/core/to-json-schema.js
 function assignProps(target, ...sources) {
   for (const source of sources) {
     for (const key of Reflect.ownKeys(source)) {
@@ -11919,7 +11919,7 @@ var createStandardJSONSchemaMethod = (schema, io, processors = {}) => (params) =
   return finalize(ctx, schema);
 };
 
-// node_modules/zod/v4/core/json-schema-processors.js
+// bridge/node_modules/zod/v4/core/json-schema-processors.js
 var formatMap = {
   guid: "uuid",
   url: "uri",
@@ -12362,7 +12362,7 @@ var optionalProcessor = (schema, ctx, _json, params) => {
   seen.ref = def.innerType;
 };
 
-// node_modules/@modelcontextprotocol/sdk/dist/esm/server/zod-compat.js
+// bridge/node_modules/@modelcontextprotocol/sdk/dist/esm/server/zod-compat.js
 function isZ4Schema(s) {
   const schema = s;
   return !!schema._zod;
@@ -12425,7 +12425,7 @@ function getLiteralValue(schema) {
   return void 0;
 }
 
-// node_modules/zod/v4/classic/errors.js
+// bridge/node_modules/zod/v4/classic/errors.js
 var _installedErrorProtos = /* @__PURE__ */ new WeakSet([Object.prototype, Error.prototype]);
 function _lazyMethod(proto, key, make) {
   Object.defineProperty(proto, key, {
@@ -12470,7 +12470,7 @@ var ZodRealError = /* @__PURE__ */ $constructor("ZodError", initializer2, void 0
   Parent: Error
 });
 
-// node_modules/zod/v4/classic/parse.js
+// bridge/node_modules/zod/v4/classic/parse.js
 var parse2 = /* @__PURE__ */ _parse(ZodRealError);
 var parseAsync2 = /* @__PURE__ */ _parseAsync(ZodRealError);
 var safeParse3 = /* @__PURE__ */ _safeParse(ZodRealError);
@@ -12484,7 +12484,7 @@ var safeDecode2 = /* @__PURE__ */ _safeDecode(ZodRealError);
 var safeEncodeAsync2 = /* @__PURE__ */ _safeEncodeAsync(ZodRealError);
 var safeDecodeAsync2 = /* @__PURE__ */ _safeDecodeAsync(ZodRealError);
 
-// node_modules/zod/v4/classic/schemas.js
+// bridge/node_modules/zod/v4/classic/schemas.js
 function _ensureDefaultLocale() {
   if (!globalConfig.localeError)
     config(en_default());
@@ -13405,7 +13405,7 @@ function preprocess(fn, schema) {
   });
 }
 
-// node_modules/zod/v4/classic/iso.js
+// bridge/node_modules/zod/v4/classic/iso.js
 var iso_exports = {};
 __export(iso_exports, {
   ZodISODate: () => ZodISODate,
@@ -13430,7 +13430,7 @@ function duration2(params) {
   return _isoDuration(ZodISODuration, params);
 }
 
-// node_modules/@modelcontextprotocol/sdk/dist/esm/types.js
+// bridge/node_modules/@modelcontextprotocol/sdk/dist/esm/types.js
 var LATEST_PROTOCOL_VERSION = "2025-11-25";
 var SUPPORTED_PROTOCOL_VERSIONS = [LATEST_PROTOCOL_VERSION, "2025-06-18", "2025-03-26", "2024-11-05", "2024-10-07"];
 var RELATED_TASK_META_KEY = "io.modelcontextprotocol/related-task";
@@ -14949,15 +14949,15 @@ var UrlElicitationRequiredError = class extends McpError {
   }
 };
 
-// node_modules/@modelcontextprotocol/sdk/dist/esm/experimental/tasks/interfaces.js
+// bridge/node_modules/@modelcontextprotocol/sdk/dist/esm/experimental/tasks/interfaces.js
 function isTerminal(status) {
   return status === "completed" || status === "failed" || status === "cancelled";
 }
 
-// node_modules/zod-to-json-schema/dist/esm/parsers/string.js
+// bridge/node_modules/zod-to-json-schema/dist/esm/parsers/string.js
 var ALPHA_NUMERIC = new Set("ABCDEFGHIJKLMNOPQRSTUVXYZabcdefghijklmnopqrstuvxyz0123456789");
 
-// node_modules/@modelcontextprotocol/sdk/dist/esm/server/zod-json-schema-compat.js
+// bridge/node_modules/@modelcontextprotocol/sdk/dist/esm/server/zod-json-schema-compat.js
 function getMethodLiteral(schema) {
   const shape = getObjectShape(schema);
   const methodSchema = shape?.method;
@@ -14978,7 +14978,7 @@ function parseWithCompat(schema, data) {
   return result.data;
 }
 
-// node_modules/@modelcontextprotocol/sdk/dist/esm/shared/protocol.js
+// bridge/node_modules/@modelcontextprotocol/sdk/dist/esm/shared/protocol.js
 var DEFAULT_REQUEST_TIMEOUT_MSEC = 6e4;
 var Protocol = class {
   constructor(_options) {
@@ -15932,7 +15932,7 @@ function mergeCapabilities(base, additional) {
   return result;
 }
 
-// node_modules/@modelcontextprotocol/sdk/dist/esm/validation/ajv-provider.js
+// bridge/node_modules/@modelcontextprotocol/sdk/dist/esm/validation/ajv-provider.js
 var import_ajv = __toESM(require_ajv(), 1);
 var import_ajv_formats = __toESM(require_dist(), 1);
 function createDefaultAjvInstance() {
@@ -16000,7 +16000,7 @@ var AjvJsonSchemaValidator = class {
   }
 };
 
-// node_modules/@modelcontextprotocol/sdk/dist/esm/experimental/tasks/server.js
+// bridge/node_modules/@modelcontextprotocol/sdk/dist/esm/experimental/tasks/server.js
 var ExperimentalServerTasks = class {
   constructor(_server) {
     this._server = _server;
@@ -16213,7 +16213,7 @@ var ExperimentalServerTasks = class {
   }
 };
 
-// node_modules/@modelcontextprotocol/sdk/dist/esm/experimental/tasks/helpers.js
+// bridge/node_modules/@modelcontextprotocol/sdk/dist/esm/experimental/tasks/helpers.js
 function assertToolsCallTaskCapability(requests, method, entityName) {
   if (!requests) {
     throw new Error(`${entityName} does not support task creation (required for ${method})`);
@@ -16248,7 +16248,7 @@ function assertClientRequestTaskCapability(requests, method, entityName) {
   }
 }
 
-// node_modules/@modelcontextprotocol/sdk/dist/esm/server/index.js
+// bridge/node_modules/@modelcontextprotocol/sdk/dist/esm/server/index.js
 var Server = class extends Protocol {
   /**
    * Initializes this server with the given name and version information.
@@ -16628,10 +16628,10 @@ var Server = class extends Protocol {
   }
 };
 
-// node_modules/@modelcontextprotocol/sdk/dist/esm/server/stdio.js
+// bridge/node_modules/@modelcontextprotocol/sdk/dist/esm/server/stdio.js
 import process3 from "node:process";
 
-// node_modules/@modelcontextprotocol/sdk/dist/esm/shared/stdio.js
+// bridge/node_modules/@modelcontextprotocol/sdk/dist/esm/shared/stdio.js
 var ReadBuffer = class {
   append(chunk) {
     this._buffer = this._buffer ? Buffer.concat([this._buffer, chunk]) : chunk;
@@ -16659,7 +16659,7 @@ function serializeMessage(message) {
   return JSON.stringify(message) + "\n";
 }
 
-// node_modules/@modelcontextprotocol/sdk/dist/esm/server/stdio.js
+// bridge/node_modules/@modelcontextprotocol/sdk/dist/esm/server/stdio.js
 var StdioServerTransport = class {
   constructor(_stdin = process3.stdin, _stdout = process3.stdout) {
     this._stdin = _stdin;
@@ -16720,12 +16720,16 @@ var StdioServerTransport = class {
   }
 };
 
-// bridge.mjs
+// bridge/bridge.mjs
 import { basename, dirname, join } from "node:path";
 import { homedir } from "node:os";
 import { mkdirSync, readFileSync } from "node:fs";
+import { randomUUID as randomUUID2 } from "node:crypto";
 
-// chat-db.mjs
+// bridge/session-store.mjs
+import { randomUUID } from "node:crypto";
+
+// bridge/chat-db.mjs
 import { DatabaseSync } from "node:sqlite";
 var SCHEMA = `
 CREATE TABLE IF NOT EXISTS messages (
@@ -16778,153 +16782,116 @@ CREATE TABLE IF NOT EXISTS delivery_cursors (
   last_read_id INTEGER NOT NULL DEFAULT 0,
   PRIMARY KEY (chat, identity, consumer)
 );
+
+CREATE TABLE IF NOT EXISTS session_records (
+  identity TEXT PRIMARY KEY,
+  created_at INTEGER NOT NULL
+);
+CREATE TABLE IF NOT EXISTS subscriptions (
+  identity TEXT NOT NULL,
+  chat TEXT NOT NULL,
+  seat TEXT NOT NULL,
+  PRIMARY KEY(identity, chat)
+);
+CREATE TABLE IF NOT EXISTS connection_leases (
+  identity TEXT NOT NULL,
+  role TEXT NOT NULL,
+  connection_id TEXT NOT NULL,
+  binding_id TEXT,
+  expires_at INTEGER NOT NULL,
+  PRIMARY KEY(identity, role)
+);
+CREATE TABLE IF NOT EXISTS delivery_receipts (
+  identity TEXT NOT NULL,
+  message_id INTEGER NOT NULL,
+  chat TEXT NOT NULL,
+  state TEXT NOT NULL,
+  turn_id TEXT,
+  detail TEXT,
+  updated_at INTEGER NOT NULL,
+  PRIMARY KEY(identity, message_id)
+);
+CREATE TABLE IF NOT EXISTS schema_migrations (name TEXT PRIMARY KEY);
 `;
 function openDb(path) {
   const db2 = new DatabaseSync(path);
   db2.exec("PRAGMA busy_timeout = 4000;");
   db2.exec("PRAGMA journal_mode = WAL;");
   db2.exec(SCHEMA);
-  const messageColumns = new Set(
-    db2.prepare("PRAGMA table_info(messages)").all().map((column) => column.name)
-  );
-  for (const column of ["sender_identity", "to_seat", "to_identity"]) {
-    if (!messageColumns.has(column)) db2.exec(`ALTER TABLE messages ADD COLUMN ${column} TEXT;`);
-  }
-  db2.exec("CREATE INDEX IF NOT EXISTS idx_messages_chat_to_id ON messages(chat, to_identity, id);");
-  return db2;
-}
-var AUTO_SEATS = ["a", "b", "c", "d", "e", "f", "g", "h"];
-function claimSeat(db2, chat, requested, identity, { staleSec = 30 } = {}) {
   db2.exec("BEGIN IMMEDIATE;");
   try {
-    const rows = db2.prepare(
-      `SELECT s.seat, s.identity, p.last_seen_epoch AS last
-           FROM seats s LEFT JOIN presence p ON p.chat = s.chat AND p.seat = s.seat
-          WHERE s.chat = :chat`
-    ).all({ chat });
-    const held = new Map(rows.map((r) => [r.seat, { identity: r.identity, last: r.last || 0 }]));
-    const cutoff = Date.now() - staleSec * 1e3;
-    const status = (name) => {
-      const h = held.get(name);
-      if (!h) return "free";
-      if (h.identity === identity) return "mine";
-      return h.last >= cutoff ? "live" : "dead";
-    };
-    const take = (name, st) => {
-      if (st === "free" || st === "dead") {
-        db2.prepare("DELETE FROM cursors WHERE chat = :chat AND seat = :seat").run({ chat, seat: name });
-      }
-      db2.prepare(
-        `INSERT INTO seats (chat, seat, identity, joined_ts) VALUES (:chat, :seat, :identity, :ts)
-         ON CONFLICT(chat, seat) DO UPDATE SET identity = :identity`
-      ).run({ chat, seat: name, identity, ts: (/* @__PURE__ */ new Date()).toISOString() });
-      db2.prepare(
-        `INSERT INTO presence (chat, seat, last_seen_epoch) VALUES (:chat, :seat, :epoch)
-         ON CONFLICT(chat, seat) DO UPDATE SET last_seen_epoch = :epoch`
-      ).run({ chat, seat: name, epoch: Date.now() });
-      db2.exec("COMMIT;");
-      return name;
-    };
-    const candidates = requested ? [requested, ...Array.from({ length: 19 }, (_, i) => `${requested}-${i + 2}`)] : AUTO_SEATS;
-    for (const c of candidates) {
-      const st = status(c);
-      if (st === "free" || st === "mine" || st === "dead") return take(c, st);
+    const messageColumns = new Set(
+      db2.prepare("PRAGMA table_info(messages)").all().map((column) => column.name)
+    );
+    for (const column of ["sender_identity", "to_seat", "to_identity"]) {
+      if (!messageColumns.has(column)) db2.exec(`ALTER TABLE messages ADD COLUMN ${column} TEXT;`);
     }
+    db2.exec(
+      "CREATE INDEX IF NOT EXISTS idx_messages_chat_to_id ON messages(chat, to_identity, id);"
+    );
+    const seatColumns = db2.prepare("PRAGMA table_info(seats)").all().map((c) => c.name);
+    if (!seatColumns.includes("connection_id"))
+      db2.exec("ALTER TABLE seats ADD COLUMN connection_id TEXT;");
+    const leaseColumns = db2.prepare("PRAGMA table_info(connection_leases)").all().map((c) => c.name);
+    if (!leaseColumns.includes("binding_id"))
+      db2.exec("ALTER TABLE connection_leases ADD COLUMN binding_id TEXT;");
+    if (!db2.prepare("SELECT 1 FROM schema_migrations WHERE name='subscriptions-v1'").get()) {
+      db2.exec(`INSERT OR IGNORE INTO subscriptions(identity, chat, seat)
+      SELECT identity, chat, MIN(seat) FROM seats
+      WHERE identity LIKE 'codex:%' OR identity LIKE 'claude:%'
+      GROUP BY identity, chat HAVING COUNT(*) = 1;
+      INSERT OR IGNORE INTO session_records(identity, created_at)
+      SELECT DISTINCT identity, 0 FROM subscriptions;
+      INSERT OR IGNORE INTO delivery_cursors(chat,identity,consumer,last_read_id)
+      SELECT s.chat,s.identity,'claude-channel',c.last_read_id FROM subscriptions s
+      JOIN cursors c ON c.chat=s.chat AND c.seat=s.seat;
+      INSERT INTO schema_migrations(name) VALUES ('subscriptions-v1');`);
+    }
+    db2.exec("COMMIT;");
+  } catch (error2) {
     db2.exec("ROLLBACK;");
-    return null;
-  } catch (e) {
-    try {
-      db2.exec("ROLLBACK;");
-    } catch {
-    }
-    throw e;
+    db2.close();
+    throw error2;
   }
-}
-function releaseSeat(db2, chat, seat) {
-  db2.prepare("DELETE FROM seats WHERE chat = :chat AND seat = :seat").run({ chat, seat });
-  db2.prepare("DELETE FROM cursors WHERE chat = :chat AND seat = :seat").run({ chat, seat });
-  db2.prepare("DELETE FROM presence WHERE chat = :chat AND seat = :seat").run({ chat, seat });
+  return db2;
 }
 function listSeats(db2, chat) {
   return db2.prepare("SELECT seat, identity FROM seats WHERE chat = :chat ORDER BY seat").all({ chat });
 }
-function migrateIdentity(db2, chat, seat, oldIdentity, newIdentity) {
-  if (!oldIdentity || !newIdentity || oldIdentity === newIdentity) return;
-  db2.exec("BEGIN IMMEDIATE;");
-  try {
-    db2.prepare(
-      `UPDATE seats SET identity = :newIdentity
-        WHERE chat = :chat AND seat = :seat AND identity = :oldIdentity`
-    ).run({ chat, seat, oldIdentity, newIdentity });
-    db2.prepare(
-      `UPDATE messages SET sender_identity = :newIdentity
-        WHERE chat = :chat AND sender_identity = :oldIdentity`
-    ).run({ chat, oldIdentity, newIdentity });
-    db2.prepare(
-      `UPDATE messages SET to_identity = :newIdentity
-        WHERE chat = :chat AND to_identity = :oldIdentity`
-    ).run({ chat, oldIdentity, newIdentity });
-    const cursors = db2.prepare(
-      `SELECT consumer, last_read_id FROM delivery_cursors
-        WHERE chat = :chat AND identity = :oldIdentity`
-    ).all({ chat, oldIdentity });
-    for (const cursor of cursors) {
-      db2.prepare(
-        `INSERT INTO delivery_cursors (chat, identity, consumer, last_read_id)
-         VALUES (:chat, :newIdentity, :consumer, :lastReadId)
-         ON CONFLICT(chat, identity, consumer) DO UPDATE SET
-           last_read_id = MAX(last_read_id, excluded.last_read_id)`
-      ).run({
-        chat,
-        newIdentity,
-        consumer: cursor.consumer,
-        lastReadId: cursor.last_read_id
-      });
-    }
-    db2.prepare(
-      "DELETE FROM delivery_cursors WHERE chat = :chat AND identity = :oldIdentity"
-    ).run({ chat, oldIdentity });
-    db2.exec("COMMIT;");
-  } catch (error2) {
-    try {
-      db2.exec("ROLLBACK;");
-    } catch {
-    }
-    throw error2;
-  }
-}
 function knownChats(db2) {
-  return db2.prepare("SELECT DISTINCT chat FROM seats UNION SELECT DISTINCT chat FROM messages ORDER BY chat").all().map((r) => r.chat);
+  return db2.prepare(
+    "SELECT DISTINCT chat FROM seats UNION SELECT DISTINCT chat FROM messages ORDER BY chat"
+  ).all().map((r) => r.chat);
 }
 function migrateChat(db2, oldName, newName) {
-  db2.exec("BEGIN IMMEDIATE;");
+  db2.exec("SAVEPOINT rename_chat;");
   try {
-    for (const t of ["messages", "seats", "cursors", "presence", "delivery_cursors"]) {
-      db2.prepare(`UPDATE ${t} SET chat = :new WHERE chat = :old`).run({ new: newName, old: oldName });
+    for (const t of [
+      "messages",
+      "seats",
+      "cursors",
+      "presence",
+      "delivery_cursors",
+      "subscriptions",
+      "delivery_receipts"
+    ]) {
+      db2.prepare(`UPDATE ${t} SET chat = :new WHERE chat = :old`).run({
+        new: newName,
+        old: oldName
+      });
     }
     db2.prepare(
       `INSERT INTO chat_renames (old_name, new_name, ts) VALUES (:old, :new, :ts)
        ON CONFLICT(old_name) DO UPDATE SET new_name = :new, ts = :ts`
     ).run({ old: oldName, new: newName, ts: (/* @__PURE__ */ new Date()).toISOString() });
-    db2.exec("COMMIT;");
+    db2.exec("RELEASE rename_chat;");
   } catch (e) {
     try {
-      db2.exec("ROLLBACK;");
+      db2.exec("ROLLBACK TO rename_chat; RELEASE rename_chat;");
     } catch {
     }
     throw e;
   }
-}
-function resolveRename(db2, name) {
-  const seen = /* @__PURE__ */ new Set();
-  let cur = name;
-  while (!seen.has(cur)) {
-    seen.add(cur);
-    const row = db2.prepare("SELECT new_name FROM chat_renames WHERE old_name = :c").get({ c: cur });
-    if (!row) break;
-    cur = row.new_name;
-  }
-  return cur;
 }
 function sendMessage(db2, chat, seat, body, { senderIdentity = null, toSeat = null, toIdentity = null } = {}) {
   if (toSeat === null !== (toIdentity === null)) {
@@ -16938,17 +16905,18 @@ function sendMessage(db2, chat, seat, body, { senderIdentity = null, toSeat = nu
   ).run({ chat, seat, senderIdentity, toSeat, toIdentity, body, ts: (/* @__PURE__ */ new Date()).toISOString() });
   return Number(res.lastInsertRowid);
 }
-function messagesAfter(db2, chat, seat, lastId, { identity = null } = {}) {
+function messagesAfter(db2, chat, seat, lastId, { identity: identity2 = null } = {}) {
   return db2.prepare(
     `SELECT id, chat, seat, sender_identity, to_seat, to_identity,
               type, body, ref, summary, ts
          FROM messages
         WHERE chat = :chat
           AND id > :lastId
-          AND seat != :seat
+          AND ((sender_identity IS NOT NULL AND sender_identity IS NOT :identity)
+               OR (sender_identity IS NULL AND seat != :seat))
           AND (to_identity IS NULL OR to_identity = :identity)
         ORDER BY id ASC`
-  ).all({ chat, seat, identity, lastId });
+  ).all({ chat, seat, identity: identity2, lastId });
 }
 function history(db2, chat, { limit = 30, beforeId, viewerIdentity } = {}) {
   const visibility = viewerIdentity === void 0 ? "" : ` AND (to_identity IS NULL
@@ -16976,52 +16944,210 @@ function maxId(db2, chat) {
   const row = db2.prepare("SELECT COALESCE(MAX(id), 0) AS m FROM messages WHERE chat = :chat").get({ chat });
   return Number(row.m);
 }
-function getCursor(db2, chat, seat) {
-  const row = db2.prepare("SELECT last_read_id FROM cursors WHERE chat = :chat AND seat = :seat").get({ chat, seat });
-  return row ? Number(row.last_read_id) : null;
-}
 function setCursor(db2, chat, seat, id) {
   db2.prepare(
     `INSERT INTO cursors (chat, seat, last_read_id) VALUES (:chat, :seat, :id)
      ON CONFLICT(chat, seat) DO UPDATE SET last_read_id = :id`
   ).run({ chat, seat, id });
 }
-function getDeliveryCursor(db2, chat, identity, consumer) {
+function getDeliveryCursor(db2, chat, identity2, consumer) {
   const row = db2.prepare(
     `SELECT last_read_id FROM delivery_cursors
         WHERE chat = :chat AND identity = :identity AND consumer = :consumer`
-  ).get({ chat, identity, consumer });
+  ).get({ chat, identity: identity2, consumer });
   return row ? Number(row.last_read_id) : null;
 }
-function setDeliveryCursor(db2, chat, identity, consumer, id) {
+function setDeliveryCursor(db2, chat, identity2, consumer, id) {
   db2.prepare(
     `INSERT INTO delivery_cursors (chat, identity, consumer, last_read_id)
      VALUES (:chat, :identity, :consumer, :id)
      ON CONFLICT(chat, identity, consumer) DO UPDATE SET last_read_id = :id`
-  ).run({ chat, identity, consumer, id });
-}
-function deleteDeliveryCursor(db2, chat, identity, consumer) {
-  db2.prepare(
-    `DELETE FROM delivery_cursors
-      WHERE chat = :chat AND identity = :identity AND consumer = :consumer`
-  ).run({ chat, identity, consumer });
-}
-function heartbeat(db2, chat, seat, epoch) {
-  db2.prepare(
-    `INSERT INTO presence (chat, seat, last_seen_epoch) VALUES (:chat, :seat, :epoch)
-     ON CONFLICT(chat, seat) DO UPDATE SET last_seen_epoch = :epoch`
-  ).run({ chat, seat, epoch });
+  ).run({ chat, identity: identity2, consumer, id });
 }
 function whoOnline(db2, chat, windowSec = 10) {
   const cutoff = Date.now() - windowSec * 1e3;
-  return db2.prepare("SELECT seat, last_seen_epoch FROM presence WHERE chat = :chat AND last_seen_epoch >= :cutoff ORDER BY seat").all({ chat, cutoff }).map((r) => r.seat);
+  return db2.prepare(
+    "SELECT seat, last_seen_epoch FROM presence WHERE chat = :chat AND last_seen_epoch >= :cutoff ORDER BY seat"
+  ).all({ chat, cutoff }).map((r) => r.seat);
 }
 
-// bridge.mjs
+// bridge/session-store.mjs
+var LEASE_MS = 3e4;
+var durable = (identity2) => /^(codex|claude):.+/.test(identity2 || "");
+function atomic(db2, fn) {
+  const savepoint = `s_${randomUUID().replaceAll("-", "")}`;
+  db2.exec(`SAVEPOINT ${savepoint}`);
+  try {
+    const result = fn();
+    db2.exec(`RELEASE ${savepoint}`);
+    return result;
+  } catch (error2) {
+    db2.exec(`ROLLBACK TO ${savepoint}; RELEASE ${savepoint}`);
+    throw error2;
+  }
+}
+function claimConnection(db2, identity2, role, connection2, now = Date.now(), binding = null) {
+  db2.exec("BEGIN IMMEDIATE");
+  try {
+    const held = db2.prepare("SELECT * FROM connection_leases WHERE identity=? AND role=?").get(identity2, role);
+    if (held && held.expires_at > now && held.connection_id !== connection2) {
+      throw new Error(
+        `Session ${identity2} already has a live ${role} connection. Close it before resuming here.`
+      );
+    }
+    const partner = db2.prepare(
+      `SELECT binding_id FROM connection_leases
+      WHERE identity=? AND role<>? AND expires_at>?`
+    ).get(identity2, role, now);
+    if (partner && partner.binding_id !== binding) {
+      throw new Error(
+        `Session ${identity2} is attached through another launcher; close it before resuming here.`
+      );
+    }
+    if (role === "bridge" && !held && db2.prepare(
+      `SELECT 1 FROM seats s JOIN presence p USING(chat,seat)
+      WHERE s.identity=? AND s.connection_id IS NULL AND p.last_seen_epoch>?`
+    ).get(identity2, now - LEASE_MS)) {
+      throw new Error(
+        `Session ${identity2} has a live legacy bridge. Close that session before reconnecting.`
+      );
+    }
+    db2.prepare(
+      `INSERT INTO connection_leases(identity,role,connection_id,expires_at,binding_id) VALUES (?, ?, ?, ?, ?)
+      ON CONFLICT(identity,role) DO UPDATE SET connection_id=excluded.connection_id, expires_at=excluded.expires_at, binding_id=excluded.binding_id`
+    ).run(identity2, role, connection2, now + LEASE_MS, binding);
+    if (role === "bridge") {
+      const rows = db2.prepare("SELECT chat,seat FROM seats WHERE identity=? AND connection_id IS NOT ?").all(identity2, connection2);
+      for (const row of rows) removeLiveSeat(db2, row.chat, row.seat);
+    }
+    db2.exec("COMMIT");
+  } catch (error2) {
+    db2.exec("ROLLBACK");
+    throw error2;
+  }
+}
+function renewConnection(db2, identity2, role, connection2, now = Date.now()) {
+  const result = db2.prepare(
+    `UPDATE connection_leases SET expires_at=?
+    WHERE identity=? AND role=? AND connection_id=? AND expires_at>?`
+  ).run(now + LEASE_MS, identity2, role, connection2, now);
+  if (!result.changes)
+    throw new Error(`Lost ${role} connection lease for ${identity2}; reconnect Intercom.`);
+  if (role === "bridge")
+    db2.prepare(
+      `UPDATE presence SET last_seen_epoch=? WHERE (chat,seat) IN
+    (SELECT chat,seat FROM seats WHERE identity=? AND connection_id=?)`
+    ).run(now, identity2, connection2);
+}
+function removeLiveSeat(db2, chat, seat) {
+  db2.prepare("DELETE FROM seats WHERE chat=? AND seat=?").run(chat, seat);
+  db2.prepare("DELETE FROM presence WHERE chat=? AND seat=?").run(chat, seat);
+  db2.prepare("DELETE FROM cursors WHERE chat=? AND seat=?").run(chat, seat);
+}
+function detachConnection(db2, identity2, role, connection2) {
+  return atomic(db2, () => {
+    const result = db2.prepare("DELETE FROM connection_leases WHERE identity=? AND role=? AND connection_id=?").run(identity2, role, connection2);
+    if (!result.changes || role !== "bridge") return;
+    for (const row of db2.prepare("SELECT chat,seat FROM seats WHERE identity=? AND connection_id=?").all(identity2, connection2)) {
+      removeLiveSeat(db2, row.chat, row.seat);
+    }
+  });
+}
+function subscriptions(db2, identity2) {
+  return db2.prepare("SELECT chat,seat FROM subscriptions WHERE identity=? ORDER BY chat").all(identity2);
+}
+function liveMemberships(db2, identity2, connection2) {
+  return db2.prepare("SELECT chat,seat FROM seats WHERE identity=? AND connection_id=? ORDER BY chat").all(identity2, connection2);
+}
+function joinRoom(db2, identity2, connection2, chat, requested, { restoring = false } = {}) {
+  return atomic(db2, () => {
+    renewConnection(db2, identity2, "bridge", connection2);
+    if (typeof chat !== "string" || !chat.trim()) throw new Error("Room name must not be empty");
+    const saved = db2.prepare("SELECT seat FROM subscriptions WHERE identity=? AND chat=?").get(identity2, chat);
+    const preferred = requested || saved?.seat;
+    const strict = restoring || Boolean(saved) && (!requested || requested === saved.seat);
+    const candidates = preferred ? [
+      preferred,
+      ...strict ? [] : Array.from({ length: 19 }, (_, i) => `${preferred}-${i + 2}`)
+    ] : ["a", "b", "c", "d", "e", "f", "g", "h"];
+    const available = (seat) => {
+      const held = db2.prepare(
+        `SELECT s.*, p.last_seen_epoch, l.expires_at
+        FROM seats s LEFT JOIN presence p USING(chat,seat)
+        LEFT JOIN connection_leases l ON l.identity=s.identity AND l.role='bridge' AND l.connection_id=s.connection_id
+        WHERE s.chat=? AND s.seat=?`
+      ).get(chat, seat);
+      return !held || held.identity === identity2 || (held.connection_id ? (held.expires_at || 0) <= Date.now() : (held.last_seen_epoch || 0) < Date.now() - LEASE_MS);
+    };
+    const assigned = candidates.find(available);
+    if (!assigned)
+      throw new Error(
+        `Room ${chat}: saved/requested seat "${preferred || "(auto)"}" is occupied; choose a name explicitly. No identity was transferred.`
+      );
+    for (const row of db2.prepare("SELECT seat FROM seats WHERE chat=? AND identity=?").all(chat, identity2)) {
+      if (row.seat !== assigned) removeLiveSeat(db2, chat, row.seat);
+    }
+    removeLiveSeat(db2, chat, assigned);
+    db2.prepare(
+      "INSERT INTO seats(chat,seat,identity,joined_ts,connection_id) VALUES (?,?,?,?,?)"
+    ).run(chat, assigned, identity2, (/* @__PURE__ */ new Date()).toISOString(), connection2);
+    db2.prepare("INSERT INTO presence VALUES (?,?,?)").run(chat, assigned, Date.now());
+    if (durable(identity2))
+      db2.prepare(
+        `INSERT INTO subscriptions VALUES (?,?,?)
+      ON CONFLICT(identity,chat) DO UPDATE SET seat=excluded.seat`
+      ).run(identity2, chat, assigned);
+    for (const consumer of ["claude-channel", "codex-app-server"]) {
+      if (getDeliveryCursor(db2, chat, identity2, consumer) === null) {
+        setDeliveryCursor(db2, chat, identity2, consumer, maxId(db2, chat));
+      }
+    }
+    setCursor(db2, chat, assigned, getDeliveryCursor(db2, chat, identity2, "claude-channel"));
+    return assigned;
+  });
+}
+function attachRooms(db2, identity2, connection2, startupChat2, seat) {
+  return atomic(db2, () => {
+    renewConnection(db2, identity2, "bridge", connection2);
+    const known = db2.prepare("SELECT 1 FROM session_records WHERE identity=?").get(identity2);
+    const conflicts2 = [];
+    if (known) {
+      for (const saved of subscriptions(db2, identity2)) {
+        try {
+          joinRoom(db2, identity2, connection2, saved.chat, saved.seat, { restoring: true });
+        } catch (error2) {
+          conflicts2.push(error2.message);
+        }
+      }
+    } else {
+      if (startupChat2) joinRoom(db2, identity2, connection2, startupChat2, seat);
+      if (durable(identity2))
+        db2.prepare("INSERT INTO session_records VALUES (?,?)").run(identity2, Date.now());
+    }
+    return conflicts2;
+  });
+}
+function leaveRoom(db2, identity2, connection2, chat) {
+  return atomic(db2, () => {
+    renewConnection(db2, identity2, "bridge", connection2);
+    for (const row of db2.prepare("SELECT seat FROM seats WHERE chat=? AND identity=? AND connection_id=?").all(chat, identity2, connection2)) {
+      removeLiveSeat(db2, chat, row.seat);
+    }
+    db2.prepare("DELETE FROM subscriptions WHERE identity=? AND chat=?").run(identity2, chat);
+    db2.prepare("DELETE FROM delivery_cursors WHERE identity=? AND chat=?").run(identity2, chat);
+  });
+}
+
+// bridge/bridge.mjs
 var CHAT_DB = process.env.CHAT_DB || join(homedir(), ".claude", "intercom", "chat.db");
 mkdirSync(dirname(CHAT_DB), { recursive: true, mode: 448 });
 var FALLBACK_IDENTITY = `process:${process.pid}:${Date.now()}`;
 function currentIdentity() {
+  const host = server.getClientVersion()?.name || "";
+  if (/claude/i.test(host)) {
+    const id = process.env.CLAUDE_CODE_SESSION_ID || process.env.CLAUDE_SESSION_ID;
+    return id ? `claude:${id}` : FALLBACK_IDENTITY;
+  }
   if (process.env.CHAT_IDENTITY_FILE) {
     try {
       const fromFile = readFileSync(process.env.CHAT_IDENTITY_FILE, "utf8").trim();
@@ -17030,6 +17156,7 @@ function currentIdentity() {
     }
   }
   if (process.env.CHAT_IDENTITY) return process.env.CHAT_IDENTITY;
+  if (/codex/i.test(host)) return FALLBACK_IDENTITY;
   if (process.env.CLAUDE_CODE_SESSION_ID) return `claude:${process.env.CLAUDE_CODE_SESSION_ID}`;
   if (process.env.CLAUDE_SESSION_ID) return `claude:${process.env.CLAUDE_SESSION_ID}`;
   return FALLBACK_IDENTITY;
@@ -17038,9 +17165,55 @@ var log = (m) => process.stderr.write(`[bridge] ${m}
 `);
 var db = openDb(CHAT_DB);
 var joined = /* @__PURE__ */ new Map();
-var CODEX_RELAY_CONSUMER = "codex-app-server";
+var connection = randomUUID2();
+var identity = null;
+var attachmentError = null;
+var conflicts = [];
+function refreshMemberships() {
+  joined.clear();
+  for (const row of liveMemberships(db, identity, connection)) {
+    joined.set(row.chat, {
+      seat: row.seat,
+      identity,
+      cursor: getDeliveryCursor(db, row.chat, identity, "claude-channel") ?? 0
+    });
+  }
+}
+function activateIdentity() {
+  if (identity || attachmentError) return;
+  if (!server.getClientVersion()) return;
+  const candidate = currentIdentity();
+  if (process.env.CHAT_IDENTITY_FILE && candidate.startsWith("codex-startup:")) return;
+  if (!/^(codex|claude):.+/.test(candidate)) {
+    attachmentError = "No resumable session ID available. Launch Codex through the Intercom wrapper or Claude Code with its session ID environment; a PID or seat name cannot identify a conversation.";
+    log(`ATTACHMENT REJECTED: ${attachmentError}`);
+    return;
+  }
+  try {
+    claimConnection(
+      db,
+      candidate,
+      "bridge",
+      connection,
+      Date.now(),
+      candidate.startsWith("codex:") ? process.env.CHAT_IDENTITY_FILE || null : null
+    );
+    identity = candidate;
+    conflicts = attachRooms(db, identity, connection, startupChat, process.env.SEAT);
+    refreshMemberships();
+    log(
+      `attached identity="${identity}" connection="${connection}" rooms=${JSON.stringify([...joined.keys()])}`
+    );
+    for (const conflict of conflicts) log(`RESTORE CONFLICT: ${conflict}`);
+  } catch (error2) {
+    attachmentError = error2.message;
+    if (identity) detachConnection(db, identity, "bridge", connection);
+    identity = null;
+    log(`ATTACHMENT REJECTED: ${attachmentError}`);
+  }
+}
 var server = new Server(
-  { name: "intercom", version: "0.4.5" },
+  { name: "intercom", version: "0.5.0" },
   {
     capabilities: { experimental: { "claude/channel": {} }, tools: {} },
     instructions: 'This is multi-session chat between Claude Code sessions over a shared store. Channel events are INCOMING messages from peers, formatted "[<chat>] <seat>: <text>". Default behavior is RELAY: show an incoming message to your user and reply only on their direction (autonomous back-and-forth only if the user explicitly says so). Tools: join({chat,seat?}) to enter a chat (seat auto-assigned if omitted); leave({chat}); chats() to list joined + available chats; send({chat?,body,to?}) to post a broadcast or address one live seat; (chat optional when in exactly one); history({chat?,limit?,before_id?}) for recent context; who({chat?}) for who is online. You may be in several chats at once.'
@@ -17057,25 +17230,10 @@ function resolveChat(arg) {
   throw new Error(`in multiple chats (${[...joined.keys()].join(", ")}) -- pass chat explicitly`);
 }
 function doJoin(chat, seat) {
-  const identity = currentIdentity();
-  const previous = joined.get(chat);
-  const assigned = claimSeat(db, chat, seat || null, identity);
-  if (!assigned) {
-    throw new Error(
-      seat ? `seat "${seat}" in "${chat}" is taken` : `chat "${chat}" is full (seats a-h all claimed)`
-    );
-  }
-  let cur = getCursor(db, chat, assigned);
-  if (cur === null) {
-    cur = maxId(db, chat);
-    setCursor(db, chat, assigned, cur);
-  }
-  if ((identity.startsWith("codex:") || process.env.CHAT_IDENTITY_FILE) && getDeliveryCursor(db, chat, identity, CODEX_RELAY_CONSUMER) === null) {
-    setDeliveryCursor(db, chat, identity, CODEX_RELAY_CONSUMER, cur);
-  }
-  if (previous && previous.seat !== assigned) releaseSeat(db, chat, previous.seat);
-  joined.set(chat, { seat: assigned, cursor: cur, identity });
-  log(`joined chat="${chat}" seat="${assigned}" identity="${identity}" cursor=${cur}`);
+  const assigned = joinRoom(db, identity, connection, chat, seat);
+  refreshMemberships();
+  conflicts = conflicts.filter((message) => !message.startsWith(`Room ${chat}:`));
+  log(`joined chat="${chat}" seat="${assigned}" identity="${identity}"`);
   const peers = listSeats(db, chat).filter((s) => s.seat !== assigned).map((s) => s.seat);
   return { assigned, peers, online: whoOnline(db, chat) };
 }
@@ -17083,7 +17241,14 @@ var TOOLS = [
   {
     name: "join",
     description: "Join a chat (enter it and start receiving its messages). Seat auto-assigned if omitted.",
-    inputSchema: { type: "object", properties: { chat: { type: "string" }, seat: { type: "string", description: "optional seat label; auto a-h if omitted" } }, required: ["chat"] }
+    inputSchema: {
+      type: "object",
+      properties: {
+        chat: { type: "string" },
+        seat: { type: "string", description: "optional seat label; auto a-h if omitted" }
+      },
+      required: ["chat"]
+    }
   },
   {
     name: "leave",
@@ -17098,16 +17263,30 @@ var TOOLS = [
   {
     name: "send",
     description: "Send a broadcast, or address one live seat with `to`. `chat` is optional when you are in exactly one chat.",
-    inputSchema: { type: "object", properties: {
-      chat: { type: "string" },
-      body: { type: "string" },
-      to: { type: "string", description: "optional exact live seat name; only that session receives the message" }
-    }, required: ["body"] }
+    inputSchema: {
+      type: "object",
+      properties: {
+        chat: { type: "string" },
+        body: { type: "string" },
+        to: {
+          type: "string",
+          description: "optional exact live seat name; only that session receives the message"
+        }
+      },
+      required: ["body"]
+    }
   },
   {
     name: "history",
     description: "Recent messages for catch-up. Page back with before_id.",
-    inputSchema: { type: "object", properties: { chat: { type: "string" }, limit: { type: "number" }, before_id: { type: "number" } } }
+    inputSchema: {
+      type: "object",
+      properties: {
+        chat: { type: "string" },
+        limit: { type: "number" },
+        before_id: { type: "number" }
+      }
+    }
   },
   {
     name: "who",
@@ -17117,101 +17296,132 @@ var TOOLS = [
   {
     name: "rename",
     description: "Rename a chat. All members pick up the new name automatically.",
-    inputSchema: { type: "object", properties: { chat: { type: "string" }, to: { type: "string" } }, required: ["to"] }
+    inputSchema: {
+      type: "object",
+      properties: { chat: { type: "string" }, to: { type: "string" } },
+      required: ["to"]
+    }
   }
 ];
 server.setRequestHandler(ListToolsRequestSchema, async () => ({ tools: TOOLS }));
 server.setRequestHandler(CallToolRequestSchema, async (req) => {
-  const a = req.params.arguments || {};
-  switch (req.params.name) {
-    case "join": {
-      const r = doJoin(a.chat, a.seat);
-      const suffixed = a.seat && r.assigned !== a.seat;
-      return text(
-        `Joined "${a.chat}" as seat "${r.assigned}". ` + (suffixed ? `(Requested "${a.seat}" but a live session holds it, so you are "${r.assigned}".) ` : "") + (r.peers.length ? `Other seats: ${r.peers.join(", ")}. ` : "No other seats yet. ") + (r.online.length ? `Online now: ${r.online.join(", ")}.` : "")
-      );
-    }
-    case "leave": {
-      const chat = resolveChat(a.chat);
-      const { seat } = joined.get(chat);
-      deleteDeliveryCursor(db, chat, currentIdentity(), CODEX_RELAY_CONSUMER);
-      releaseSeat(db, chat, seat);
-      joined.delete(chat);
-      log(`left chat="${chat}" seat="${seat}"`);
-      return text(`Left "${chat}".`);
-    }
-    case "chats": {
-      const mine = [...joined.entries()].map(([c, v]) => `${c} (seat ${v.seat})`);
-      const all = knownChats(db);
-      return text(
-        `You are in: ${mine.length ? mine.join(", ") : "(none)"}
-Available chats: ${all.length ? all.join(", ") : "(none)"}`
-      );
-    }
-    case "send": {
-      const chat = resolveChat(a.chat);
-      if (typeof a.body !== "string" || !a.body.trim()) throw new Error("send requires a non-empty body");
-      const { seat } = joined.get(chat);
-      const targetName = typeof a.to === "string" ? a.to.trim() : "";
-      let target = null;
-      if (targetName) {
-        target = listSeats(db, chat).find((candidate) => candidate.seat === targetName);
-        if (!target) {
-          const available = listSeats(db, chat).map((candidate) => candidate.seat);
-          throw new Error(
-            `seat "${targetName}" is not currently in "${chat}"` + (available.length ? `; available seats: ${available.join(", ")}` : "; no seats are present")
-          );
-        }
-        if (target.identity === currentIdentity()) throw new Error("cannot send a direct message to your own seat");
+  activateIdentity();
+  if (attachmentError) throw new Error(attachmentError);
+  if (!identity)
+    throw new Error("Waiting for the actual Codex thread ID; retry after the relay attaches.");
+  return atomic(db, () => {
+    renewConnection(db, identity, "bridge", connection);
+    refreshMemberships();
+    const a = req.params.arguments || {};
+    switch (req.params.name) {
+      case "join": {
+        const r = doJoin(a.chat, a.seat);
+        const suffixed = a.seat && r.assigned !== a.seat;
+        return text(
+          `Joined "${a.chat}" as seat "${r.assigned}". ` + (suffixed ? `(Requested "${a.seat}" but a live session holds it, so you are "${r.assigned}".) ` : "") + (r.peers.length ? `Other seats: ${r.peers.join(", ")}. ` : "No other seats yet. ") + (r.online.length ? `Online now: ${r.online.join(", ")}.` : "")
+        );
       }
-      const id = sendMessage(db, chat, seat, a.body.trim(), {
-        senderIdentity: currentIdentity(),
-        toSeat: target?.seat ?? null,
-        toIdentity: target?.identity ?? null
-      });
-      log(`sent chat="${chat}" seat="${seat}" to="${target?.seat ?? "*"}" id=${id}`);
-      return text(
-        target ? `Sent directly to "${target.seat}" in "${chat}" as "${seat}" (id ${id}).` : `Broadcast to "${chat}" as "${seat}" (id ${id}).`
-      );
+      case "leave": {
+        const chat = a.chat || resolveChat();
+        leaveRoom(db, identity, connection, chat);
+        joined.delete(chat);
+        conflicts = conflicts.filter((message) => !message.startsWith(`Room ${chat}:`));
+        log(`left chat="${chat}"`);
+        return text(`Left "${chat}".`);
+      }
+      case "chats": {
+        const mine = [...joined.entries()].map(([c, v]) => `${c} (seat ${v.seat})`);
+        const all = knownChats(db);
+        return text(
+          `You are in: ${mine.length ? mine.join(", ") : "(none)"}
+Available chats: ${all.length ? all.join(", ") : "(none)"}
+Identity: ${identity}
+Saved rooms: ${subscriptions(db, identity).map((s) => `${s.chat} (${s.seat})`).join(", ") || "(none)"}
+` + (conflicts.length ? `Restore conflicts:
+${conflicts.join("\n")}` : "") + db.prepare(
+            `SELECT message_id,chat,state FROM delivery_receipts
+          WHERE identity=? AND state IN ('submitting','uncertain')`
+          ).all(identity).map(
+            (r) => `
+Delivery needs reconciliation: #${r.message_id} in ${r.chat} (${r.state})`
+          ).join("")
+        );
+      }
+      case "send": {
+        const chat = resolveChat(a.chat);
+        if (typeof a.body !== "string" || !a.body.trim())
+          throw new Error("send requires a non-empty body");
+        const { seat } = joined.get(chat);
+        const targetName = typeof a.to === "string" ? a.to.trim() : "";
+        let target = null;
+        if (targetName) {
+          target = listSeats(db, chat).find((candidate) => candidate.seat === targetName);
+          if (target && !whoOnline(db, chat, 30).includes(target.seat)) target = null;
+          if (!target) {
+            const available = listSeats(db, chat).map((candidate) => candidate.seat);
+            throw new Error(
+              `seat "${targetName}" is not currently in "${chat}"` + (available.length ? `; available seats: ${available.join(", ")}` : "; no seats are present")
+            );
+          }
+          if (target.identity === identity)
+            throw new Error("cannot send a direct message to your own seat");
+        }
+        const id = sendMessage(db, chat, seat, a.body.trim(), {
+          senderIdentity: identity,
+          toSeat: target?.seat ?? null,
+          toIdentity: target?.identity ?? null
+        });
+        log(`sent chat="${chat}" seat="${seat}" to="${target?.seat ?? "*"}" id=${id}`);
+        return text(
+          target ? `Sent directly to "${target.seat}" in "${chat}" as "${seat}" (id ${id}).` : `Broadcast to "${chat}" as "${seat}" (id ${id}).`
+        );
+      }
+      case "history": {
+        const chat = resolveChat(a.chat);
+        const rows = history(db, chat, {
+          limit: a.limit ?? 30,
+          beforeId: a.before_id,
+          viewerIdentity: identity
+        });
+        if (!rows.length) return text(`No history in "${chat}".`);
+        return text(
+          rows.map((r) => {
+            const route = r.to_seat ? `${r.seat} -> ${r.to_seat}` : r.seat;
+            return `#${r.id} ${route}: ${r.body ?? r.summary ?? r.ref ?? ""}`;
+          }).join("\n")
+        );
+      }
+      case "who": {
+        const chat = resolveChat(a.chat);
+        const on = whoOnline(db, chat);
+        return text(
+          on.length ? `Online in "${chat}": ${on.join(", ")}` : `Nobody online in "${chat}".`
+        );
+      }
+      case "rename": {
+        const chat = resolveChat(a.chat);
+        const to = (a.to || "").trim();
+        if (!to || /[^a-zA-Z0-9._-]/.test(to))
+          throw new Error("rename target must use only a-z A-Z 0-9 . _ -");
+        if (to === chat) return text(`Chat is already named "${chat}".`);
+        const state = joined.get(chat);
+        migrateChat(db, chat, to);
+        joined.delete(chat);
+        joined.set(to, state);
+        setCursor(db, to, state.seat, state.cursor);
+        sendMessage(db, to, state.seat, `(renamed this chat from "${chat}" to "${to}")`, {
+          senderIdentity: identity
+        });
+        log(`renamed "${chat}" -> "${to}"`);
+        return text(`Renamed "${chat}" to "${to}". Other members will pick it up automatically.`);
+      }
+      default:
+        throw new Error(`unknown tool: ${req.params.name}`);
     }
-    case "history": {
-      const chat = resolveChat(a.chat);
-      const rows = history(db, chat, {
-        limit: a.limit ?? 30,
-        beforeId: a.before_id,
-        viewerIdentity: currentIdentity()
-      });
-      if (!rows.length) return text(`No history in "${chat}".`);
-      return text(rows.map((r) => {
-        const route = r.to_seat ? `${r.seat} -> ${r.to_seat}` : r.seat;
-        return `#${r.id} ${route}: ${r.body ?? r.summary ?? r.ref ?? ""}`;
-      }).join("\n"));
-    }
-    case "who": {
-      const chat = resolveChat(a.chat);
-      const on = whoOnline(db, chat);
-      return text(on.length ? `Online in "${chat}": ${on.join(", ")}` : `Nobody online in "${chat}".`);
-    }
-    case "rename": {
-      const chat = resolveChat(a.chat);
-      const to = (a.to || "").trim();
-      if (!to || /[^a-zA-Z0-9._-]/.test(to)) throw new Error("rename target must use only a-z A-Z 0-9 . _ -");
-      if (to === chat) return text(`Chat is already named "${chat}".`);
-      const state = joined.get(chat);
-      migrateChat(db, chat, to);
-      joined.delete(chat);
-      joined.set(to, state);
-      setCursor(db, to, state.seat, state.cursor);
-      sendMessage(db, to, state.seat, `(renamed this chat from "${chat}" to "${to}")`);
-      log(`renamed "${chat}" -> "${to}"`);
-      return text(`Renamed "${chat}" to "${to}". Other members will pick it up automatically.`);
-    }
-    default:
-      throw new Error(`unknown tool: ${req.params.name}`);
-  }
+  });
 });
 await server.connect(new StdioServerTransport());
-log(`connected (identity=${currentIdentity()}, db=${CHAT_DB})`);
+log(`connected (awaiting host identity, db=${CHAT_DB})`);
 function projectChat() {
   const raw = process.env.CHAT_PROJECT || basename(process.cwd());
   return (raw || "project").replace(/[^a-zA-Z0-9._-]/g, "-");
@@ -17220,95 +17430,77 @@ var startupChat = process.env.CHAT || null;
 if (!startupChat && /^(1|true|yes|on)$/i.test(process.env.CHAT_AUTOJOIN_PROJECT ?? "1")) {
   startupChat = projectChat();
 }
-if (startupChat) {
-  try {
-    const r = doJoin(startupChat, process.env.SEAT);
-    log(`startup auto-join chat="${startupChat}" seat="${r.assigned}" (cwd=${process.cwd()})`);
-  } catch (e) {
-    log(`startup auto-join failed: ${e.message}`);
-  }
-}
+activateIdentity();
+setInterval(activateIdentity, 250);
 var POLL_MS = 1500;
-setInterval(() => {
-  for (const [chat, state] of joined) {
-    const identity = currentIdentity();
-    if (identity === state.identity) continue;
-    try {
-      migrateIdentity(db, chat, state.seat, state.identity, identity);
-      log(`identity migrated chat="${chat}" seat="${state.seat}" "${state.identity}" -> "${identity}"`);
-      state.identity = identity;
-    } catch (err) {
-      log(`identity migration error chat="${chat}": ${err}`);
-    }
-  }
-  for (const chat of [...joined.keys()]) {
-    const resolved = resolveRename(db, chat);
-    if (resolved === chat || !joined.has(chat)) continue;
-    const state = joined.get(chat);
-    joined.delete(chat);
-    if (joined.has(resolved)) {
-      const ex = joined.get(resolved);
-      ex.cursor = Math.min(ex.cursor, state.cursor);
-    } else {
-      joined.set(resolved, state);
-      setCursor(db, resolved, state.seat, state.cursor);
-    }
-    server.notification({
-      method: "notifications/claude/channel",
-      params: {
-        content: `[${resolved}] system: this chat was renamed from "${chat}" to "${resolved}"`,
-        meta: { chat: String(resolved), event: "rename", from: String(chat) }
-      }
-    }).catch((err) => log(`rename notice error: ${err}`));
-    log(`applied rename "${chat}" -> "${resolved}"`);
-  }
-  for (const [chat, state] of joined) {
-    try {
-      const rows = messagesAfter(db, chat, state.seat, state.cursor, { identity: state.identity });
-      for (const row of rows) {
-        server.notification({
-          method: "notifications/claude/channel",
-          params: {
-            content: `[${chat}] ${row.seat}${row.to_seat ? ` -> ${row.to_seat}` : ""}: ${row.body}`,
-            // meta values MUST be strings (see HARD RULES above).
-            meta: {
-              chat: String(chat),
-              seat: String(row.seat),
-              id: String(row.id),
-              direct: String(Boolean(row.to_identity)),
-              to: String(row.to_seat || "")
+var polling = false;
+setInterval(async () => {
+  if (!identity || polling || attachmentError) return;
+  polling = true;
+  try {
+    renewConnection(db, identity, "bridge", connection);
+    refreshMemberships();
+    if (identity.startsWith("codex:")) return;
+    for (const [chat, state] of joined) {
+      try {
+        const rows = messagesAfter(db, chat, state.seat, state.cursor, { identity: state.identity });
+        for (const row of rows) {
+          await server.notification({
+            method: "notifications/claude/channel",
+            params: {
+              content: `[${chat}] ${row.seat}${row.to_seat ? ` -> ${row.to_seat}` : ""}: ${row.body}`,
+              // meta values MUST be strings (see HARD RULES above).
+              meta: {
+                chat: String(chat),
+                seat: String(row.seat),
+                id: String(row.id),
+                direct: String(Boolean(row.to_identity)),
+                to: String(row.to_seat || "")
+              }
             }
-          }
-        }).then(() => log(`pushed chat="${chat}" id=${row.id} from="${row.seat}"`)).catch((err) => log(`push error chat="${chat}" id=${row.id}: ${err}`));
-        if (row.id > state.cursor) {
-          state.cursor = row.id;
-          setCursor(db, chat, state.seat, row.id);
+          });
+          atomic(db, () => {
+            renewConnection(db, identity, "bridge", connection);
+            if (!liveMemberships(db, identity, connection).some(
+              (r) => r.chat === chat && r.seat === state.seat
+            ))
+              return;
+            if (row.id > state.cursor) {
+              state.cursor = row.id;
+              setCursor(db, chat, state.seat, row.id);
+              setDeliveryCursor(db, chat, identity, "claude-channel", row.id);
+            }
+          });
         }
+      } catch (err) {
+        log(`poll error chat="${chat}": ${err}`);
       }
-    } catch (err) {
-      log(`poll error chat="${chat}": ${err}`);
     }
+  } catch (error2) {
+    log(error2.message);
+    attachmentError = error2.message;
+  } finally {
+    polling = false;
   }
 }, POLL_MS);
 setInterval(() => {
-  const now = Date.now();
-  for (const [chat, state] of joined) {
-    try {
-      heartbeat(db, chat, state.seat, now);
-    } catch (err) {
-      log(`heartbeat error chat="${chat}": ${err}`);
-    }
+  if (!identity || attachmentError) return;
+  try {
+    renewConnection(db, identity, "bridge", connection);
+  } catch (error2) {
+    attachmentError = error2.message;
+    log(attachmentError);
   }
 }, 5e3);
 log(`loops started (poll=${POLL_MS}ms)`);
 function shutdown() {
-  for (const [chat, state] of joined) {
+  if (identity)
     try {
-      releaseSeat(db, chat, state.seat);
+      detachConnection(db, identity, "bridge", connection);
     } catch {
     }
-  }
   process.exit(0);
 }
+server.onclose = shutdown;
 process.on("SIGTERM", shutdown);
 process.on("SIGINT", shutdown);

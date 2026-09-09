@@ -41,16 +41,6 @@ function parseArgs(argv) {
   }
 }
 
-function resumedThreadId(args) {
-  for (let index = 0; index < args.length; index++) {
-    if (args[index] === 'resume' && args[index + 1]?.match(/^[0-9a-f-]{36}$/i)) return args[index + 1]
-    if ((args[index] === '--resume' || args[index] === '-r') && args[index + 1]?.match(/^[0-9a-f-]{36}$/i)) {
-      return args[index + 1]
-    }
-  }
-  return null
-}
-
 async function freePort(requested) {
   if (requested) return Number(requested)
   return await new Promise((resolvePromise, reject) => {
@@ -79,8 +69,8 @@ async function waitReady(port, child) {
 const options = parseArgs(process.argv.slice(2))
 const port = await freePort(options.port)
 const endpoint = `ws://127.0.0.1:${port}`
-const knownThreadId = resumedThreadId(options.codexArgs)
-const provisionalIdentity = knownThreadId ? `codex:${knownThreadId}` : `codex-startup:${randomUUID()}`
+// Never guess identity from arguments: pickers, --last and forks resolve later.
+const provisionalIdentity = `codex-startup:${randomUUID()}`
 const runtimeDir = join(tmpdir(), 'intercom-codex')
 mkdirSync(runtimeDir, { recursive: true, mode: 0o700 })
 const identityFile = join(runtimeDir, `${process.pid}-${randomUUID()}.identity`)
@@ -151,7 +141,6 @@ try {
     dbPath: options.dbPath,
     chat: options.chat,
     identityFile,
-    threadId: knownThreadId,
   })
   const relayRun = relay.start().catch((error) => {
     process.stderr.write(`[intercom] relay failed: ${error.stack || error}\n`)

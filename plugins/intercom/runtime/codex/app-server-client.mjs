@@ -41,10 +41,11 @@ export class AppServerClient extends EventEmitter {
     })
 
     await this.request('initialize', {
+      capabilities: { experimentalApi: true },
       clientInfo: {
         name: this.clientName,
         title: 'Intercom Relay',
-        version: '0.4.5',
+        version: '0.5.0',
       },
     })
     this.notify('initialized', {})

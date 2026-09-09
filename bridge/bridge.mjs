@@ -23,12 +23,30 @@ import { ListToolsRequestSchema, CallToolRequestSchema } from '@modelcontextprot
 import { basename, dirname, join } from 'node:path'
 import { homedir } from 'node:os'
 import { mkdirSync, readFileSync } from 'node:fs'
+import { randomUUID } from 'node:crypto'
 import {
-  openDb, claimSeat, releaseSeat, listSeats, knownChats,
-  sendMessage, messagesAfter, history, maxId,
-  getCursor, setCursor, heartbeat, whoOnline,
-  getDeliveryCursor, setDeliveryCursor, deleteDeliveryCursor,
-  migrateChat, resolveRename, migrateIdentity,
+  atomic,
+  claimConnection,
+  renewConnection,
+  detachConnection,
+  attachRooms,
+  joinRoom,
+  leaveRoom,
+  liveMemberships,
+  subscriptions,
+} from './session-store.mjs'
+import {
+  openDb,
+  listSeats,
+  knownChats,
+  sendMessage,
+  messagesAfter,
+  history,
+  setCursor,
+  whoOnline,
+  getDeliveryCursor,
+  setDeliveryCursor,
+  migrateChat,
 } from './chat-db.mjs'
 
 // Plugin installs intentionally need no machine-specific MCP configuration.
@@ -37,6 +55,13 @@ const CHAT_DB = process.env.CHAT_DB || join(homedir(), '.claude', 'intercom', 'c
 mkdirSync(dirname(CHAT_DB), { recursive: true, mode: 0o700 })
 const FALLBACK_IDENTITY = `process:${process.pid}:${Date.now()}`
 function currentIdentity() {
+  const host = server.getClientVersion()?.name || ''
+  // Nested agents inherit shell environment. A Claude reviewer launched by
+  // Codex must never consume its parent's identity file, or vice versa.
+  if (/claude/i.test(host)) {
+    const id = process.env.CLAUDE_CODE_SESSION_ID || process.env.CLAUDE_SESSION_ID
+    return id ? `claude:${id}` : FALLBACK_IDENTITY
+  }
   if (process.env.CHAT_IDENTITY_FILE) {
     try {
       const fromFile = readFileSync(process.env.CHAT_IDENTITY_FILE, 'utf8').trim()
@@ -44,6 +69,7 @@ function currentIdentity() {
     } catch {}
   }
   if (process.env.CHAT_IDENTITY) return process.env.CHAT_IDENTITY
+  if (/codex/i.test(host)) return FALLBACK_IDENTITY
   // Claude preserves its session UUID across --resume and supplies it to child
   // processes. Prefixing avoids collisions with Codex UUIDs in the same database.
   if (process.env.CLAUDE_CODE_SESSION_ID) return `claude:${process.env.CLAUDE_CODE_SESSION_ID}`
@@ -56,10 +82,61 @@ const db = openDb(CHAT_DB)
 
 // In-memory membership: chat -> { seat, cursor }. This is what the poll loop walks.
 const joined = new Map()
-const CODEX_RELAY_CONSUMER = 'codex-app-server'
+const connection = randomUUID()
+let identity = null
+let attachmentError = null
+let conflicts = []
+
+function refreshMemberships() {
+  joined.clear()
+  for (const row of liveMemberships(db, identity, connection)) {
+    joined.set(row.chat, {
+      seat: row.seat,
+      identity,
+      cursor: getDeliveryCursor(db, row.chat, identity, 'claude-channel') ?? 0,
+    })
+  }
+}
+
+function activateIdentity() {
+  if (identity || attachmentError) return
+  if (!server.getClientVersion()) return // wait for the MCP host's initialize handshake
+  const candidate = currentIdentity()
+  // The resume picker and forks must resolve their ACTUAL thread before any seat
+  // is claimed. Never migrate provisional subscriptions into an existing owner.
+  if (process.env.CHAT_IDENTITY_FILE && candidate.startsWith('codex-startup:')) return
+  if (!/^(codex|claude):.+/.test(candidate)) {
+    attachmentError =
+      'No resumable session ID available. Launch Codex through the Intercom wrapper or Claude Code with its session ID environment; a PID or seat name cannot identify a conversation.'
+    log(`ATTACHMENT REJECTED: ${attachmentError}`)
+    return
+  }
+  try {
+    claimConnection(
+      db,
+      candidate,
+      'bridge',
+      connection,
+      Date.now(),
+      candidate.startsWith('codex:') ? process.env.CHAT_IDENTITY_FILE || null : null
+    )
+    identity = candidate
+    conflicts = attachRooms(db, identity, connection, startupChat, process.env.SEAT)
+    refreshMemberships()
+    log(
+      `attached identity="${identity}" connection="${connection}" rooms=${JSON.stringify([...joined.keys()])}`
+    )
+    for (const conflict of conflicts) log(`RESTORE CONFLICT: ${conflict}`)
+  } catch (error) {
+    attachmentError = error.message
+    if (identity) detachConnection(db, identity, 'bridge', connection)
+    identity = null
+    log(`ATTACHMENT REJECTED: ${attachmentError}`)
+  }
+}
 
 const server = new Server(
-  { name: 'intercom', version: '0.4.5' },
+  { name: 'intercom', version: '0.5.0' },
   {
     capabilities: { experimental: { 'claude/channel': {} }, tools: {} },
     instructions:
@@ -89,155 +166,228 @@ function resolveChat(arg) {
 }
 
 function doJoin(chat, seat) {
-  const identity = currentIdentity()
-  const previous = joined.get(chat)
-  const assigned = claimSeat(db, chat, seat || null, identity)
-  if (!assigned) {
-    throw new Error(
-      seat ? `seat "${seat}" in "${chat}" is taken` : `chat "${chat}" is full (seats a-h all claimed)`
-    )
-  }
-  // Start caught-up so history is not replayed as unread.
-  let cur = getCursor(db, chat, assigned)
-  if (cur === null) { cur = maxId(db, chat); setCursor(db, chat, assigned, cur) }
-  // Establish the Codex wake boundary at join time. The relay discovers rooms
-  // asynchronously; without this independent cursor, a message arriving between
-  // join and discovery could be mistaken for old history and skipped.
-  if ((identity.startsWith('codex:') || process.env.CHAT_IDENTITY_FILE) &&
-      getDeliveryCursor(db, chat, identity, CODEX_RELAY_CONSUMER) === null) {
-    setDeliveryCursor(db, chat, identity, CODEX_RELAY_CONSUMER, cur)
-  }
-  if (previous && previous.seat !== assigned) releaseSeat(db, chat, previous.seat)
-  joined.set(chat, { seat: assigned, cursor: cur, identity })
-  log(`joined chat="${chat}" seat="${assigned}" identity="${identity}" cursor=${cur}`)
-  const peers = listSeats(db, chat).filter((s) => s.seat !== assigned).map((s) => s.seat)
+  const assigned = joinRoom(db, identity, connection, chat, seat)
+  refreshMemberships()
+  conflicts = conflicts.filter((message) => !message.startsWith(`Room ${chat}:`))
+  log(`joined chat="${chat}" seat="${assigned}" identity="${identity}"`)
+  const peers = listSeats(db, chat)
+    .filter((s) => s.seat !== assigned)
+    .map((s) => s.seat)
   return { assigned, peers, online: whoOnline(db, chat) }
 }
 
 // ---- tools -----------------------------------------------------------------
 const TOOLS = [
-  { name: 'join', description: 'Join a chat (enter it and start receiving its messages). Seat auto-assigned if omitted.',
-    inputSchema: { type: 'object', properties: { chat: { type: 'string' }, seat: { type: 'string', description: 'optional seat label; auto a-h if omitted' } }, required: ['chat'] } },
-  { name: 'leave', description: 'Leave a chat (stop receiving its messages, free your seat).',
-    inputSchema: { type: 'object', properties: { chat: { type: 'string' } }, required: ['chat'] } },
-  { name: 'chats', description: 'List chats you are in (with your seat) and all chats available to join.',
-    inputSchema: { type: 'object', properties: {} } },
-  { name: 'send', description: 'Send a broadcast, or address one live seat with `to`. `chat` is optional when you are in exactly one chat.',
-    inputSchema: { type: 'object', properties: {
-      chat: { type: 'string' },
-      body: { type: 'string' },
-      to: { type: 'string', description: 'optional exact live seat name; only that session receives the message' },
-    }, required: ['body'] } },
-  { name: 'history', description: 'Recent messages for catch-up. Page back with before_id.',
-    inputSchema: { type: 'object', properties: { chat: { type: 'string' }, limit: { type: 'number' }, before_id: { type: 'number' } } } },
-  { name: 'who', description: 'Which seats are currently online in a chat.',
-    inputSchema: { type: 'object', properties: { chat: { type: 'string' } } } },
-  { name: 'rename', description: 'Rename a chat. All members pick up the new name automatically.',
-    inputSchema: { type: 'object', properties: { chat: { type: 'string' }, to: { type: 'string' } }, required: ['to'] } },
+  {
+    name: 'join',
+    description:
+      'Join a chat (enter it and start receiving its messages). Seat auto-assigned if omitted.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        chat: { type: 'string' },
+        seat: { type: 'string', description: 'optional seat label; auto a-h if omitted' },
+      },
+      required: ['chat'],
+    },
+  },
+  {
+    name: 'leave',
+    description: 'Leave a chat (stop receiving its messages, free your seat).',
+    inputSchema: { type: 'object', properties: { chat: { type: 'string' } }, required: ['chat'] },
+  },
+  {
+    name: 'chats',
+    description: 'List chats you are in (with your seat) and all chats available to join.',
+    inputSchema: { type: 'object', properties: {} },
+  },
+  {
+    name: 'send',
+    description:
+      'Send a broadcast, or address one live seat with `to`. `chat` is optional when you are in exactly one chat.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        chat: { type: 'string' },
+        body: { type: 'string' },
+        to: {
+          type: 'string',
+          description: 'optional exact live seat name; only that session receives the message',
+        },
+      },
+      required: ['body'],
+    },
+  },
+  {
+    name: 'history',
+    description: 'Recent messages for catch-up. Page back with before_id.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        chat: { type: 'string' },
+        limit: { type: 'number' },
+        before_id: { type: 'number' },
+      },
+    },
+  },
+  {
+    name: 'who',
+    description: 'Which seats are currently online in a chat.',
+    inputSchema: { type: 'object', properties: { chat: { type: 'string' } } },
+  },
+  {
+    name: 'rename',
+    description: 'Rename a chat. All members pick up the new name automatically.',
+    inputSchema: {
+      type: 'object',
+      properties: { chat: { type: 'string' }, to: { type: 'string' } },
+      required: ['to'],
+    },
+  },
 ]
 
 server.setRequestHandler(ListToolsRequestSchema, async () => ({ tools: TOOLS }))
 
 server.setRequestHandler(CallToolRequestSchema, async (req) => {
-  const a = req.params.arguments || {}
-  switch (req.params.name) {
-    case 'join': {
-      const r = doJoin(a.chat, a.seat)
-      const suffixed = a.seat && r.assigned !== a.seat
-      return text(
-        `Joined "${a.chat}" as seat "${r.assigned}". ` +
-        (suffixed ? `(Requested "${a.seat}" but a live session holds it, so you are "${r.assigned}".) ` : '') +
-        (r.peers.length ? `Other seats: ${r.peers.join(', ')}. ` : 'No other seats yet. ') +
-        (r.online.length ? `Online now: ${r.online.join(', ')}.` : '')
-      )
-    }
-    case 'leave': {
-      const chat = resolveChat(a.chat)
-      const { seat } = joined.get(chat)
-      deleteDeliveryCursor(db, chat, currentIdentity(), CODEX_RELAY_CONSUMER)
-      releaseSeat(db, chat, seat)
-      joined.delete(chat)
-      log(`left chat="${chat}" seat="${seat}"`)
-      return text(`Left "${chat}".`)
-    }
-    case 'chats': {
-      const mine = [...joined.entries()].map(([c, v]) => `${c} (seat ${v.seat})`)
-      const all = knownChats(db)
-      return text(
-        `You are in: ${mine.length ? mine.join(', ') : '(none)'}\n` +
-        `Available chats: ${all.length ? all.join(', ') : '(none)'}`
-      )
-    }
-    case 'send': {
-      const chat = resolveChat(a.chat)
-      if (typeof a.body !== 'string' || !a.body.trim()) throw new Error('send requires a non-empty body')
-      const { seat } = joined.get(chat)
-      const targetName = typeof a.to === 'string' ? a.to.trim() : ''
-      let target = null
-      if (targetName) {
-        target = listSeats(db, chat).find((candidate) => candidate.seat === targetName)
-        if (!target) {
-          const available = listSeats(db, chat).map((candidate) => candidate.seat)
-          throw new Error(
-            `seat "${targetName}" is not currently in "${chat}"` +
-            (available.length ? `; available seats: ${available.join(', ')}` : '; no seats are present')
-          )
-        }
-        if (target.identity === currentIdentity()) throw new Error('cannot send a direct message to your own seat')
+  activateIdentity()
+  if (attachmentError) throw new Error(attachmentError)
+  if (!identity)
+    throw new Error('Waiting for the actual Codex thread ID; retry after the relay attaches.')
+  return atomic(db, () => {
+    renewConnection(db, identity, 'bridge', connection)
+    refreshMemberships()
+    const a = req.params.arguments || {}
+    switch (req.params.name) {
+      case 'join': {
+        const r = doJoin(a.chat, a.seat)
+        const suffixed = a.seat && r.assigned !== a.seat
+        return text(
+          `Joined "${a.chat}" as seat "${r.assigned}". ` +
+            (suffixed
+              ? `(Requested "${a.seat}" but a live session holds it, so you are "${r.assigned}".) `
+              : '') +
+            (r.peers.length ? `Other seats: ${r.peers.join(', ')}. ` : 'No other seats yet. ') +
+            (r.online.length ? `Online now: ${r.online.join(', ')}.` : '')
+        )
       }
-      const id = sendMessage(db, chat, seat, a.body.trim(), {
-        senderIdentity: currentIdentity(),
-        toSeat: target?.seat ?? null,
-        toIdentity: target?.identity ?? null,
-      })
-      log(`sent chat="${chat}" seat="${seat}" to="${target?.seat ?? '*'}" id=${id}`)
-      return text(
-        target
-          ? `Sent directly to "${target.seat}" in "${chat}" as "${seat}" (id ${id}).`
-          : `Broadcast to "${chat}" as "${seat}" (id ${id}).`
-      )
+      case 'leave': {
+        const chat = a.chat || resolveChat()
+        leaveRoom(db, identity, connection, chat)
+        joined.delete(chat)
+        conflicts = conflicts.filter((message) => !message.startsWith(`Room ${chat}:`))
+        log(`left chat="${chat}"`)
+        return text(`Left "${chat}".`)
+      }
+      case 'chats': {
+        const mine = [...joined.entries()].map(([c, v]) => `${c} (seat ${v.seat})`)
+        const all = knownChats(db)
+        return text(
+          `You are in: ${mine.length ? mine.join(', ') : '(none)'}\n` +
+            `Available chats: ${all.length ? all.join(', ') : '(none)'}\n` +
+            `Identity: ${identity}\n` +
+            `Saved rooms: ${
+              subscriptions(db, identity)
+                .map((s) => `${s.chat} (${s.seat})`)
+                .join(', ') || '(none)'
+            }\n` +
+            (conflicts.length ? `Restore conflicts:\n${conflicts.join('\n')}` : '') +
+            db
+              .prepare(
+                `SELECT message_id,chat,state FROM delivery_receipts
+          WHERE identity=? AND state IN ('submitting','uncertain')`
+              )
+              .all(identity)
+              .map(
+                (r) => `\nDelivery needs reconciliation: #${r.message_id} in ${r.chat} (${r.state})`
+              )
+              .join('')
+        )
+      }
+      case 'send': {
+        const chat = resolveChat(a.chat)
+        if (typeof a.body !== 'string' || !a.body.trim())
+          throw new Error('send requires a non-empty body')
+        const { seat } = joined.get(chat)
+        const targetName = typeof a.to === 'string' ? a.to.trim() : ''
+        let target = null
+        if (targetName) {
+          target = listSeats(db, chat).find((candidate) => candidate.seat === targetName)
+          if (target && !whoOnline(db, chat, 30).includes(target.seat)) target = null
+          if (!target) {
+            const available = listSeats(db, chat).map((candidate) => candidate.seat)
+            throw new Error(
+              `seat "${targetName}" is not currently in "${chat}"` +
+                (available.length
+                  ? `; available seats: ${available.join(', ')}`
+                  : '; no seats are present')
+            )
+          }
+          if (target.identity === identity)
+            throw new Error('cannot send a direct message to your own seat')
+        }
+        const id = sendMessage(db, chat, seat, a.body.trim(), {
+          senderIdentity: identity,
+          toSeat: target?.seat ?? null,
+          toIdentity: target?.identity ?? null,
+        })
+        log(`sent chat="${chat}" seat="${seat}" to="${target?.seat ?? '*'}" id=${id}`)
+        return text(
+          target
+            ? `Sent directly to "${target.seat}" in "${chat}" as "${seat}" (id ${id}).`
+            : `Broadcast to "${chat}" as "${seat}" (id ${id}).`
+        )
+      }
+      case 'history': {
+        const chat = resolveChat(a.chat)
+        const rows = history(db, chat, {
+          limit: a.limit ?? 30,
+          beforeId: a.before_id,
+          viewerIdentity: identity,
+        })
+        if (!rows.length) return text(`No history in "${chat}".`)
+        return text(
+          rows
+            .map((r) => {
+              const route = r.to_seat ? `${r.seat} -> ${r.to_seat}` : r.seat
+              return `#${r.id} ${route}: ${r.body ?? r.summary ?? r.ref ?? ''}`
+            })
+            .join('\n')
+        )
+      }
+      case 'who': {
+        const chat = resolveChat(a.chat)
+        const on = whoOnline(db, chat)
+        return text(
+          on.length ? `Online in "${chat}": ${on.join(', ')}` : `Nobody online in "${chat}".`
+        )
+      }
+      case 'rename': {
+        const chat = resolveChat(a.chat)
+        const to = (a.to || '').trim()
+        if (!to || /[^a-zA-Z0-9._-]/.test(to))
+          throw new Error('rename target must use only a-z A-Z 0-9 . _ -')
+        if (to === chat) return text(`Chat is already named "${chat}".`)
+        const state = joined.get(chat)
+        migrateChat(db, chat, to)
+        joined.delete(chat)
+        joined.set(to, state)
+        setCursor(db, to, state.seat, state.cursor)
+        // Human-readable note in the new chat; peers also auto-switch via the rename table.
+        sendMessage(db, to, state.seat, `(renamed this chat from "${chat}" to "${to}")`, {
+          senderIdentity: identity,
+        })
+        log(`renamed "${chat}" -> "${to}"`)
+        return text(`Renamed "${chat}" to "${to}". Other members will pick it up automatically.`)
+      }
+      default:
+        throw new Error(`unknown tool: ${req.params.name}`)
     }
-    case 'history': {
-      const chat = resolveChat(a.chat)
-      const rows = history(db, chat, {
-        limit: a.limit ?? 30,
-        beforeId: a.before_id,
-        viewerIdentity: currentIdentity(),
-      })
-      if (!rows.length) return text(`No history in "${chat}".`)
-      return text(rows.map((r) => {
-        const route = r.to_seat ? `${r.seat} -> ${r.to_seat}` : r.seat
-        return `#${r.id} ${route}: ${r.body ?? r.summary ?? r.ref ?? ''}`
-      }).join('\n'))
-    }
-    case 'who': {
-      const chat = resolveChat(a.chat)
-      const on = whoOnline(db, chat)
-      return text(on.length ? `Online in "${chat}": ${on.join(', ')}` : `Nobody online in "${chat}".`)
-    }
-    case 'rename': {
-      const chat = resolveChat(a.chat)
-      const to = (a.to || '').trim()
-      if (!to || /[^a-zA-Z0-9._-]/.test(to)) throw new Error('rename target must use only a-z A-Z 0-9 . _ -')
-      if (to === chat) return text(`Chat is already named "${chat}".`)
-      const state = joined.get(chat)
-      migrateChat(db, chat, to)
-      joined.delete(chat)
-      joined.set(to, state)
-      setCursor(db, to, state.seat, state.cursor)
-      // Human-readable note in the new chat; peers also auto-switch via the rename table.
-      sendMessage(db, to, state.seat, `(renamed this chat from "${chat}" to "${to}")`)
-      log(`renamed "${chat}" -> "${to}"`)
-      return text(`Renamed "${chat}" to "${to}". Other members will pick it up automatically.`)
-    }
-    default:
-      throw new Error(`unknown tool: ${req.params.name}`)
-  }
+  })
 })
 
 // ---- connect + loops -------------------------------------------------------
 await server.connect(new StdioServerTransport())
-log(`connected (identity=${currentIdentity()}, db=${CHAT_DB})`)
+log(`connected (awaiting host identity, db=${CHAT_DB})`)
 
 // Startup auto-join. Explicit CHAT env wins; otherwise, when CHAT_AUTOJOIN_PROJECT is
 // truthy, join a chat named after the PROJECT (basename of the working directory) so
@@ -250,62 +400,25 @@ let startupChat = process.env.CHAT || null
 if (!startupChat && /^(1|true|yes|on)$/i.test(process.env.CHAT_AUTOJOIN_PROJECT ?? '1')) {
   startupChat = projectChat()
 }
-if (startupChat) {
-  try {
-    const r = doJoin(startupChat, process.env.SEAT)
-    log(`startup auto-join chat="${startupChat}" seat="${r.assigned}" (cwd=${process.cwd()})`)
-  } catch (e) { log(`startup auto-join failed: ${e.message}`) }
-}
+activateIdentity()
+setInterval(activateIdentity, 250)
 
 // Poll every joined chat; push new peer messages as channel notifications.
 const POLL_MS = 1500
-setInterval(() => {
-  // 0) Adopt a durable identity if the launcher learned it after startup.
-  for (const [chat, state] of joined) {
-    const identity = currentIdentity()
-    if (identity === state.identity) continue
-    try {
-      migrateIdentity(db, chat, state.seat, state.identity, identity)
-      log(`identity migrated chat="${chat}" seat="${state.seat}" "${state.identity}" -> "${identity}"`)
-      state.identity = identity
-    } catch (err) {
-      log(`identity migration error chat="${chat}": ${err}`)
-    }
-  }
-
-  // 1) Apply any chat renames to our membership (snapshot keys since we mutate the map).
-  for (const chat of [...joined.keys()]) {
-    const resolved = resolveRename(db, chat)
-    if (resolved === chat || !joined.has(chat)) continue
-    const state = joined.get(chat)
-    joined.delete(chat)
-    if (joined.has(resolved)) {
-      // Already tracking the target name -> keep the lower cursor so nothing is missed.
-      const ex = joined.get(resolved)
-      ex.cursor = Math.min(ex.cursor, state.cursor)
-    } else {
-      joined.set(resolved, state)
-      setCursor(db, resolved, state.seat, state.cursor)
-    }
-    server
-      .notification({
-        method: 'notifications/claude/channel',
-        params: {
-          content: `[${resolved}] system: this chat was renamed from "${chat}" to "${resolved}"`,
-          meta: { chat: String(resolved), event: 'rename', from: String(chat) },
-        },
-      })
-      .catch((err) => log(`rename notice error: ${err}`))
-    log(`applied rename "${chat}" -> "${resolved}"`)
-  }
-
-  // 2) Poll each joined chat for new peer messages.
-  for (const [chat, state] of joined) {
-    try {
-      const rows = messagesAfter(db, chat, state.seat, state.cursor, { identity: state.identity })
-      for (const row of rows) {
-        server
-          .notification({
+let polling = false
+setInterval(async () => {
+  if (!identity || polling || attachmentError) return
+  polling = true
+  try {
+    renewConnection(db, identity, 'bridge', connection)
+    refreshMemberships()
+    if (identity.startsWith('codex:')) return // only the Codex relay delivers to Codex
+    // 2) Poll each joined chat for new peer messages.
+    for (const [chat, state] of joined) {
+      try {
+        const rows = messagesAfter(db, chat, state.seat, state.cursor, { identity: state.identity })
+        for (const row of rows) {
+          await server.notification({
             method: 'notifications/claude/channel',
             params: {
               content: `[${chat}] ${row.seat}${row.to_seat ? ` -> ${row.to_seat}` : ''}: ${row.body}`,
@@ -319,24 +432,41 @@ setInterval(() => {
               },
             },
           })
-          .then(() => log(`pushed chat="${chat}" id=${row.id} from="${row.seat}"`))
-          .catch((err) => log(`push error chat="${chat}" id=${row.id}: ${err}`))
-        if (row.id > state.cursor) {
-          state.cursor = row.id
-          setCursor(db, chat, state.seat, row.id) // persist -> lossless across respawn
+          atomic(db, () => {
+            renewConnection(db, identity, 'bridge', connection)
+            if (
+              !liveMemberships(db, identity, connection).some(
+                (r) => r.chat === chat && r.seat === state.seat
+              )
+            )
+              return
+            if (row.id > state.cursor) {
+              state.cursor = row.id
+              setCursor(db, chat, state.seat, row.id) // persist -> lossless across respawn
+              setDeliveryCursor(db, chat, identity, 'claude-channel', row.id)
+            }
+          })
         }
+      } catch (err) {
+        log(`poll error chat="${chat}": ${err}`)
       }
-    } catch (err) {
-      log(`poll error chat="${chat}": ${err}`)
     }
+  } catch (error) {
+    log(error.message)
+    attachmentError = error.message
+  } finally {
+    polling = false
   }
 }, POLL_MS)
 
 // Presence heartbeat for every joined chat.
 setInterval(() => {
-  const now = Date.now()
-  for (const [chat, state] of joined) {
-    try { heartbeat(db, chat, state.seat, now) } catch (err) { log(`heartbeat error chat="${chat}": ${err}`) }
+  if (!identity || attachmentError) return
+  try {
+    renewConnection(db, identity, 'bridge', connection)
+  } catch (error) {
+    attachmentError = error.message
+    log(attachmentError)
   }
 }, 5000)
 
@@ -347,10 +477,12 @@ log(`loops started (poll=${POLL_MS}ms)`)
 // timer. A hard kill (SIGKILL / reaper) can't run this -- those seats free via
 // the ~30s presence-stale path instead.
 function shutdown() {
-  for (const [chat, state] of joined) {
-    try { releaseSeat(db, chat, state.seat) } catch {}
-  }
+  if (identity)
+    try {
+      detachConnection(db, identity, 'bridge', connection)
+    } catch {}
   process.exit(0)
 }
+server.onclose = shutdown
 process.on('SIGTERM', shutdown)
 process.on('SIGINT', shutdown)

@@ -67,10 +67,17 @@ the beginning. The relay discovers every room owned by that identity at runtime,
 - Multiple rooms: every joined room is watched with an independent durable cursor.
 - Runtime membership: joining starts caught up; leaving stops delivery immediately; rejoining does
   not replay messages sent while explicitly absent.
-- Busy Codex thread: the relay waits and preserves ordering.
+- Busy Codex thread: the relay steers the active turn using its current turn ID.
 - Resumed thread: retains its direct-message identity.
 - Forked thread: receives a new identity.
+- Resume restores all saved rooms with their exact seat names. Name conflicts are reported;
+  another live identity is never silently replaced. Explicit leave persists across restarts.
+- Bridge and relay connection leases reject duplicate resumes and fence stale processes.
+- Accepted delivery is recorded separately from processing; transport ambiguity is logged
+  for transcript reconciliation before resend.
 - Peer-delivered turns cannot approve new command or file-change authority.
 
 App Server's WebSocket transport is experimental. The integration is isolated in
 `app-server-client.mjs` so protocol updates do not affect Claude delivery or the standard MCP tools.
+
+See [session lifecycle](../docs/SESSION-LIFECYCLE.md) for migration, recovery and live tests.

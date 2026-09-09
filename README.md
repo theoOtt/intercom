@@ -11,6 +11,8 @@ sessions; the isolated Codex relay uses Codex App Server to start turns in idle 
 - Broadcasts to the whole room.
 - Direct messages to one exact live seat; other sessions neither receive nor see them.
 - Durable direct-message identity based on the resumable Claude/Codex session UUID.
+- Resume restores all saved rooms with their exact seat names; duplicate live identities are rejected.
+- Messages steer busy Codex turns and wake idle ones. Acceptance is tracked separately from processing.
 - Presence, windowed history, persistent cursors, runtime join/leave, and room rename.
 - Bounded opt-in auto-chat with peer-authority and reply-count safeguards.
 - One WAL-mode SQLite database that Claude and Codex can safely share concurrently.
@@ -198,3 +200,7 @@ INTERCOM_LIVE_CLAUDE_TEST=1 INTERCOM_TEST_CLAUDE_PLUGIN=1 \
 
 See `codex/README.md` for the Codex control-plane details and `docs/SPEC.md` for historical design
 context.
+
+See [session lifecycle and upgrade notes](docs/SESSION-LIFECYCLE.md) for persistent subscriptions,
+connection leases, occupied-name handling and delivery reconciliation. After this upgrade, restart
+all Claude and Codex participants so old bridges cannot bypass the new ownership checks.

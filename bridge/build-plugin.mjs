@@ -28,6 +28,7 @@ for (const relative of [
   'codex/relay.mjs',
   'codex/app-server-client.mjs',
   'bridge/chat-db.mjs',
+  'bridge/session-store.mjs',
 ]) {
   const target = join(PLUGIN, 'runtime', relative)
   mkdirSync(dirname(target), { recursive: true })

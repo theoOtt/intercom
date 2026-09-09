@@ -21,7 +21,7 @@ const codexHome = join(temp, '.codex')
 const dbPath = join(temp, 'chat.db')
 const identityFile = join(temp, 'identity')
 const bridgePath = resolve('bridge/bridge.mjs')
-const provisional = `codex-startup:${randomUUID()}`
+let provisional = `codex-startup:${randomUUID()}`
 mkdirSync(codexHome, { recursive: true })
 writeFileSync(identityFile, `${provisional}\n`)
 writeFileSync(join(codexHome, 'config.toml'), `
@@ -84,6 +84,8 @@ try {
   client.on('mcpServer/startupStatus/updated', (event) => startupEvents.push(event))
   const result = await client.request('thread/start', { cwd: process.cwd() })
   if (!result.thread?.id) throw new Error('thread/start did not return a thread id')
+  provisional = `codex:${result.thread.id}`
+  writeFileSync(identityFile, `${provisional}\n`)
   // A brand-new isolated CODEX_HOME initializes its bundled plugins just after
   // thread creation. Let that one-time config refresh settle before MCP startup.
   await sleep(750)

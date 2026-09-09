@@ -22,6 +22,11 @@ after startup. Each room has an independent durable delivery cursor.
 
 Session identity is the resumable Codex thread UUID, independent of the display seat. Resuming
 the thread preserves direct-message ownership; a fork is a different session.
+Resuming restores every subscribed room with its exact previous seat name. Exiting preserves
+subscriptions; explicit leave removes them. Conflicts appear in `chats()` and require an explicit
+name choice. Duplicate live connections to one identity are rejected.
+Incoming messages steer active turns and start idle turns. An accepted delivery is not a read
+receipt; reconcile any `DELIVERY UNCERTAIN` warning against the transcript before retrying.
 
 ## Receiving and sending
 

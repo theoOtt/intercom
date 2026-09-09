@@ -55,6 +55,36 @@ CREATE TABLE IF NOT EXISTS delivery_cursors (
   last_read_id INTEGER NOT NULL DEFAULT 0,
   PRIMARY KEY (chat, identity, consumer)
 );
+
+CREATE TABLE IF NOT EXISTS session_records (
+  identity TEXT PRIMARY KEY,
+  created_at INTEGER NOT NULL
+);
+CREATE TABLE IF NOT EXISTS subscriptions (
+  identity TEXT NOT NULL,
+  chat TEXT NOT NULL,
+  seat TEXT NOT NULL,
+  PRIMARY KEY(identity, chat)
+);
+CREATE TABLE IF NOT EXISTS connection_leases (
+  identity TEXT NOT NULL,
+  role TEXT NOT NULL,
+  connection_id TEXT NOT NULL,
+  binding_id TEXT,
+  expires_at INTEGER NOT NULL,
+  PRIMARY KEY(identity, role)
+);
+CREATE TABLE IF NOT EXISTS delivery_receipts (
+  identity TEXT NOT NULL,
+  message_id INTEGER NOT NULL,
+  chat TEXT NOT NULL,
+  state TEXT NOT NULL,
+  turn_id TEXT,
+  detail TEXT,
+  updated_at INTEGER NOT NULL,
+  PRIMARY KEY(identity, message_id)
+);
+CREATE TABLE IF NOT EXISTS schema_migrations (name TEXT PRIMARY KEY);
 `
 
 export function openDb(path) {
@@ -68,13 +98,52 @@ export function openDb(path) {
   // CREATE TABLE IF NOT EXISTS does not add columns to an existing database.
   // These additive migrations preserve every old row as a broadcast: a NULL
   // to_identity means the message is visible to all seats in its chat.
-  const messageColumns = new Set(
-    db.prepare('PRAGMA table_info(messages)').all().map((column) => column.name)
-  )
-  for (const column of ['sender_identity', 'to_seat', 'to_identity']) {
-    if (!messageColumns.has(column)) db.exec(`ALTER TABLE messages ADD COLUMN ${column} TEXT;`)
+  db.exec('BEGIN IMMEDIATE;')
+  try {
+    const messageColumns = new Set(
+      db
+        .prepare('PRAGMA table_info(messages)')
+        .all()
+        .map((column) => column.name)
+    )
+    for (const column of ['sender_identity', 'to_seat', 'to_identity']) {
+      if (!messageColumns.has(column)) db.exec(`ALTER TABLE messages ADD COLUMN ${column} TEXT;`)
+    }
+    db.exec(
+      'CREATE INDEX IF NOT EXISTS idx_messages_chat_to_id ON messages(chat, to_identity, id);'
+    )
+    const seatColumns = db
+      .prepare('PRAGMA table_info(seats)')
+      .all()
+      .map((c) => c.name)
+    if (!seatColumns.includes('connection_id'))
+      db.exec('ALTER TABLE seats ADD COLUMN connection_id TEXT;')
+    const leaseColumns = db
+      .prepare('PRAGMA table_info(connection_leases)')
+      .all()
+      .map((c) => c.name)
+    if (!leaseColumns.includes('binding_id'))
+      db.exec('ALTER TABLE connection_leases ADD COLUMN binding_id TEXT;')
+    if (!db.prepare("SELECT 1 FROM schema_migrations WHERE name='subscriptions-v1'").get()) {
+      // Only unambiguous, explicitly namespaced identities can be recovered. Never
+      // associate legacy PID identities with a conversation by seat or directory.
+      db.exec(`INSERT OR IGNORE INTO subscriptions(identity, chat, seat)
+      SELECT identity, chat, MIN(seat) FROM seats
+      WHERE identity LIKE 'codex:%' OR identity LIKE 'claude:%'
+      GROUP BY identity, chat HAVING COUNT(*) = 1;
+      INSERT OR IGNORE INTO session_records(identity, created_at)
+      SELECT DISTINCT identity, 0 FROM subscriptions;
+      INSERT OR IGNORE INTO delivery_cursors(chat,identity,consumer,last_read_id)
+      SELECT s.chat,s.identity,'claude-channel',c.last_read_id FROM subscriptions s
+      JOIN cursors c ON c.chat=s.chat AND c.seat=s.seat;
+      INSERT INTO schema_migrations(name) VALUES ('subscriptions-v1');`)
+    }
+    db.exec('COMMIT;')
+  } catch (error) {
+    db.exec('ROLLBACK;')
+    db.close()
+    throw error
   }
-  db.exec('CREATE INDEX IF NOT EXISTS idx_messages_chat_to_id ON messages(chat, to_identity, id);')
   return db
 }
 
@@ -116,7 +185,10 @@ export function claimSeat(db, chat, requested, identity, { staleSec = 30 } = {})
     }
     const take = (name, st) => {
       if (st === 'free' || st === 'dead') {
-        db.prepare('DELETE FROM cursors WHERE chat = :chat AND seat = :seat').run({ chat, seat: name })
+        db.prepare('DELETE FROM cursors WHERE chat = :chat AND seat = :seat').run({
+          chat,
+          seat: name,
+        })
       }
       db.prepare(
         `INSERT INTO seats (chat, seat, identity, joined_ts) VALUES (:chat, :seat, :identity, :ts)
@@ -143,7 +215,9 @@ export function claimSeat(db, chat, requested, identity, { staleSec = 30 } = {})
     db.exec('ROLLBACK;')
     return null
   } catch (e) {
-    try { db.exec('ROLLBACK;') } catch {}
+    try {
+      db.exec('ROLLBACK;')
+    } catch {}
     throw e
   }
 }
@@ -155,14 +229,16 @@ export function releaseSeat(db, chat, seat) {
 }
 
 export function listSeats(db, chat) {
-  return db.prepare('SELECT seat, identity FROM seats WHERE chat = :chat ORDER BY seat').all({ chat })
+  return db
+    .prepare('SELECT seat, identity FROM seats WHERE chat = :chat ORDER BY seat')
+    .all({ chat })
 }
 
 /** Every room/seat currently owned by one durable agent-session identity. */
 export function listIdentityMemberships(db, identity) {
   return db
     .prepare(
-      `SELECT s.chat, s.seat, s.identity, s.joined_ts, p.last_seen_epoch
+      `SELECT s.chat, s.seat, s.identity, s.joined_ts, s.connection_id, p.last_seen_epoch
          FROM seats s
          LEFT JOIN presence p ON p.chat = s.chat AND p.seat = s.seat
         WHERE s.identity = :identity
@@ -192,10 +268,12 @@ export function migrateIdentity(db, chat, seat, oldIdentity, newIdentity) {
       `UPDATE messages SET to_identity = :newIdentity
         WHERE chat = :chat AND to_identity = :oldIdentity`
     ).run({ chat, oldIdentity, newIdentity })
-    const cursors = db.prepare(
-      `SELECT consumer, last_read_id FROM delivery_cursors
+    const cursors = db
+      .prepare(
+        `SELECT consumer, last_read_id FROM delivery_cursors
         WHERE chat = :chat AND identity = :oldIdentity`
-    ).all({ chat, oldIdentity })
+      )
+      .all({ chat, oldIdentity })
     for (const cursor of cursors) {
       db.prepare(
         `INSERT INTO delivery_cursors (chat, identity, consumer, last_read_id)
@@ -209,37 +287,55 @@ export function migrateIdentity(db, chat, seat, oldIdentity, newIdentity) {
         lastReadId: cursor.last_read_id,
       })
     }
-    db.prepare(
-      'DELETE FROM delivery_cursors WHERE chat = :chat AND identity = :oldIdentity'
-    ).run({ chat, oldIdentity })
+    db.prepare('DELETE FROM delivery_cursors WHERE chat = :chat AND identity = :oldIdentity').run({
+      chat,
+      oldIdentity,
+    })
     db.exec('COMMIT;')
   } catch (error) {
-    try { db.exec('ROLLBACK;') } catch {}
+    try {
+      db.exec('ROLLBACK;')
+    } catch {}
     throw error
   }
 }
 
 export function knownChats(db) {
   return db
-    .prepare('SELECT DISTINCT chat FROM seats UNION SELECT DISTINCT chat FROM messages ORDER BY chat')
+    .prepare(
+      'SELECT DISTINCT chat FROM seats UNION SELECT DISTINCT chat FROM messages ORDER BY chat'
+    )
     .all()
     .map((r) => r.chat)
 }
 
 /** Rename a chat: move all rows to newName and record the rename durably (atomic). */
 export function migrateChat(db, oldName, newName) {
-  db.exec('BEGIN IMMEDIATE;')
+  db.exec('SAVEPOINT rename_chat;')
   try {
-    for (const t of ['messages', 'seats', 'cursors', 'presence', 'delivery_cursors']) {
-      db.prepare(`UPDATE ${t} SET chat = :new WHERE chat = :old`).run({ new: newName, old: oldName })
+    for (const t of [
+      'messages',
+      'seats',
+      'cursors',
+      'presence',
+      'delivery_cursors',
+      'subscriptions',
+      'delivery_receipts',
+    ]) {
+      db.prepare(`UPDATE ${t} SET chat = :new WHERE chat = :old`).run({
+        new: newName,
+        old: oldName,
+      })
     }
     db.prepare(
       `INSERT INTO chat_renames (old_name, new_name, ts) VALUES (:old, :new, :ts)
        ON CONFLICT(old_name) DO UPDATE SET new_name = :new, ts = :ts`
     ).run({ old: oldName, new: newName, ts: new Date().toISOString() })
-    db.exec('COMMIT;')
+    db.exec('RELEASE rename_chat;')
   } catch (e) {
-    try { db.exec('ROLLBACK;') } catch {}
+    try {
+      db.exec('ROLLBACK TO rename_chat; RELEASE rename_chat;')
+    } catch {}
     throw e
   }
 }
@@ -302,7 +398,8 @@ export function messagesAfter(db, chat, seat, lastId, { identity = null } = {}) 
          FROM messages
         WHERE chat = :chat
           AND id > :lastId
-          AND seat != :seat
+          AND ((sender_identity IS NOT NULL AND sender_identity IS NOT :identity)
+               OR (sender_identity IS NULL AND seat != :seat))
           AND (to_identity IS NULL OR to_identity = :identity)
         ORDER BY id ASC`
     )
@@ -314,9 +411,10 @@ export function messagesAfter(db, chat, seat, lastId, { identity = null } = {}) 
  * between other sessions are omitted. Administrative callers may omit it to read all.
  */
 export function history(db, chat, { limit = 30, beforeId, viewerIdentity } = {}) {
-  const visibility = viewerIdentity === undefined
-    ? ''
-    : ` AND (to_identity IS NULL
+  const visibility =
+    viewerIdentity === undefined
+      ? ''
+      : ` AND (to_identity IS NULL
              OR sender_identity = :viewerIdentity
              OR to_identity = :viewerIdentity)`
   const params = { chat, limit }
@@ -345,7 +443,9 @@ export function history(db, chat, { limit = 30, beforeId, viewerIdentity } = {})
 }
 
 export function maxId(db, chat) {
-  const row = db.prepare('SELECT COALESCE(MAX(id), 0) AS m FROM messages WHERE chat = :chat').get({ chat })
+  const row = db
+    .prepare('SELECT COALESCE(MAX(id), 0) AS m FROM messages WHERE chat = :chat')
+    .get({ chat })
   return Number(row.m)
 }
 
@@ -399,7 +499,9 @@ export function heartbeat(db, chat, seat, epoch) {
 export function whoOnline(db, chat, windowSec = 10) {
   const cutoff = Date.now() - windowSec * 1000
   return db
-    .prepare('SELECT seat, last_seen_epoch FROM presence WHERE chat = :chat AND last_seen_epoch >= :cutoff ORDER BY seat')
+    .prepare(
+      'SELECT seat, last_seen_epoch FROM presence WHERE chat = :chat AND last_seen_epoch >= :cutoff ORDER BY seat'
+    )
     .all({ chat, cutoff })
     .map((r) => r.seat)
 }
