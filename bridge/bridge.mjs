@@ -24,6 +24,7 @@ import { basename, dirname, join } from 'node:path'
 import { homedir } from 'node:os'
 import { mkdirSync, readFileSync } from 'node:fs'
 import { randomUUID } from 'node:crypto'
+import { codexThreadId } from './codex-metadata.mjs'
 import {
   atomic,
   claimConnection,
@@ -86,6 +87,7 @@ const connection = randomUUID()
 let identity = null
 let attachmentError = null
 let conflicts = []
+let metadataIdentity = null
 
 function refreshMemberships() {
   joined.clear()
@@ -101,7 +103,12 @@ function refreshMemberships() {
 function activateIdentity() {
   if (identity || attachmentError) return
   if (!server.getClientVersion()) return // wait for the MCP host's initialize handshake
-  const candidate = currentIdentity()
+  const candidate = metadataIdentity || currentIdentity()
+  // Desktop does not run the CLI launcher. Its executor identifies the task in
+  // tool-call metadata, which arrives after initialize. Do not poison startup
+  // or guess a task from CODEX_THREAD_ID inherited through a parent shell.
+  if (/codex/i.test(server.getClientVersion()?.name || '') &&
+      candidate === FALLBACK_IDENTITY) return
   // The resume picker and forks must resolve their ACTUAL thread before any seat
   // is claimed. Never migrate provisional subscriptions into an existing owner.
   if (process.env.CHAT_IDENTITY_FILE && candidate.startsWith('codex-startup:')) return
@@ -249,10 +256,24 @@ const TOOLS = [
 server.setRequestHandler(ListToolsRequestSchema, async () => ({ tools: TOOLS }))
 
 server.setRequestHandler(CallToolRequestSchema, async (req) => {
+  let supplied = null
+  if (/codex/i.test(server.getClientVersion()?.name || '')) {
+    const thread = codexThreadId(req.params._meta)
+    supplied = thread ? `codex:${thread}` : null
+    if (metadataIdentity && supplied !== metadataIdentity)
+      throw new Error('Missing or different task metadata on a bound Intercom connection; reconnect this task.')
+    if (supplied && identity && supplied !== identity)
+      throw new Error('Codex task metadata does not match the Intercom launcher identity; refusing cross-session access.')
+    if (supplied && !identity && !process.env.CHAT_IDENTITY_FILE && !process.env.CHAT_IDENTITY)
+      metadataIdentity = supplied
+  }
   activateIdentity()
+  // The identity file can become ready on this very call, after the check above.
+  if (supplied && identity && supplied !== identity)
+    throw new Error('Codex task metadata does not match the Intercom launcher identity; refusing cross-session access.')
   if (attachmentError) throw new Error(attachmentError)
   if (!identity)
-    throw new Error('Waiting for the actual Codex thread ID; retry after the relay attaches.')
+    throw new Error('Waiting for the actual Codex thread ID; retry after the relay attaches, or use a Desktop executor that supplies task metadata.')
   return atomic(db, () => {
     renewConnection(db, identity, 'bridge', connection)
     refreshMemberships()
@@ -285,6 +306,7 @@ server.setRequestHandler(CallToolRequestSchema, async (req) => {
           `You are in: ${mine.length ? mine.join(', ') : '(none)'}\n` +
             `Available chats: ${all.length ? all.join(', ') : '(none)'}\n` +
             `Identity: ${identity}\n` +
+            (metadataIdentity ? 'Delivery: MCP pull-only; automatic Desktop push/idle wake is not connected.\n' : '') +
             `Saved rooms: ${
               subscriptions(db, identity)
                 .map((s) => `${s.chat} (${s.seat})`)

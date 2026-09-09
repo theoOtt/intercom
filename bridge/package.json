@@ -1,11 +1,11 @@
 {
   "name": "session-chat-bridge",
-  "version": "0.5.0",
+  "version": "0.5.1",
   "private": true,
   "type": "module",
   "description": "Claude Code and Codex multi-session chat over a shared SQLite file.",
   "scripts": {
-    "test": "node --no-warnings test-db.mjs && node --no-warnings test-sessions.mjs && node --no-warnings test-mcp.mjs && node --no-warnings test-lifecycle.mjs",
+    "test": "node --no-warnings test-db.mjs && node --no-warnings test-sessions.mjs && node --no-warnings test-mcp.mjs && node --no-warnings test-lifecycle.mjs && node --no-warnings test-codex-metadata.mjs",
     "build:plugin": "node build-plugin.mjs",
     "bump": "node bump-version.mjs"
   },

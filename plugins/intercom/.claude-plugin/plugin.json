@@ -1,6 +1,6 @@
 {
   "name": "intercom",
-  "version": "0.5.0",
+  "version": "0.5.1",
   "description": "Local real-time chat and directed coordination between Claude Code and Codex sessions.",
   "author": {
     "name": "Theo Ott",

@@ -16726,6 +16726,35 @@ import { homedir } from "node:os";
 import { mkdirSync, readFileSync } from "node:fs";
 import { randomUUID as randomUUID2 } from "node:crypto";
 
+// bridge/codex-metadata.mjs
+var UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+function codexThreadId(meta2) {
+  if (!meta2 || typeof meta2 !== "object") return null;
+  let turn = meta2["x-codex-turn-metadata"];
+  if (typeof turn === "string") {
+    try {
+      turn = JSON.parse(turn);
+    } catch {
+      throw new Error("Invalid Codex turn metadata");
+    }
+  }
+  const candidates = [
+    ...[
+      "openai/threadId",
+      "openai/thread_id",
+      "codexThreadId",
+      "codex_thread_id",
+      "threadId",
+      "thread_id"
+    ].map((key) => meta2[key]),
+    turn?.thread_id,
+    meta2.thread?.id
+  ].filter((value) => value !== void 0 && value !== null);
+  if (!candidates.length) return null;
+  if (candidates.some((value) => typeof value !== "string" || !UUID.test(value)) || new Set(candidates).size !== 1) throw new Error("Conflicting or invalid Codex thread metadata");
+  return candidates[0];
+}
+
 // bridge/session-store.mjs
 import { randomUUID } from "node:crypto";
 
@@ -17169,6 +17198,7 @@ var connection = randomUUID2();
 var identity = null;
 var attachmentError = null;
 var conflicts = [];
+var metadataIdentity = null;
 function refreshMemberships() {
   joined.clear();
   for (const row of liveMemberships(db, identity, connection)) {
@@ -17182,7 +17212,8 @@ function refreshMemberships() {
 function activateIdentity() {
   if (identity || attachmentError) return;
   if (!server.getClientVersion()) return;
-  const candidate = currentIdentity();
+  const candidate = metadataIdentity || currentIdentity();
+  if (/codex/i.test(server.getClientVersion()?.name || "") && candidate === FALLBACK_IDENTITY) return;
   if (process.env.CHAT_IDENTITY_FILE && candidate.startsWith("codex-startup:")) return;
   if (!/^(codex|claude):.+/.test(candidate)) {
     attachmentError = "No resumable session ID available. Launch Codex through the Intercom wrapper or Claude Code with its session ID environment; a PID or seat name cannot identify a conversation.";
@@ -17305,10 +17336,23 @@ var TOOLS = [
 ];
 server.setRequestHandler(ListToolsRequestSchema, async () => ({ tools: TOOLS }));
 server.setRequestHandler(CallToolRequestSchema, async (req) => {
+  let supplied = null;
+  if (/codex/i.test(server.getClientVersion()?.name || "")) {
+    const thread = codexThreadId(req.params._meta);
+    supplied = thread ? `codex:${thread}` : null;
+    if (metadataIdentity && supplied !== metadataIdentity)
+      throw new Error("Missing or different task metadata on a bound Intercom connection; reconnect this task.");
+    if (supplied && identity && supplied !== identity)
+      throw new Error("Codex task metadata does not match the Intercom launcher identity; refusing cross-session access.");
+    if (supplied && !identity && !process.env.CHAT_IDENTITY_FILE && !process.env.CHAT_IDENTITY)
+      metadataIdentity = supplied;
+  }
   activateIdentity();
+  if (supplied && identity && supplied !== identity)
+    throw new Error("Codex task metadata does not match the Intercom launcher identity; refusing cross-session access.");
   if (attachmentError) throw new Error(attachmentError);
   if (!identity)
-    throw new Error("Waiting for the actual Codex thread ID; retry after the relay attaches.");
+    throw new Error("Waiting for the actual Codex thread ID; retry after the relay attaches, or use a Desktop executor that supplies task metadata.");
   return atomic(db, () => {
     renewConnection(db, identity, "bridge", connection);
     refreshMemberships();
@@ -17336,7 +17380,7 @@ server.setRequestHandler(CallToolRequestSchema, async (req) => {
           `You are in: ${mine.length ? mine.join(", ") : "(none)"}
 Available chats: ${all.length ? all.join(", ") : "(none)"}
 Identity: ${identity}
-Saved rooms: ${subscriptions(db, identity).map((s) => `${s.chat} (${s.seat})`).join(", ") || "(none)"}
+` + (metadataIdentity ? "Delivery: MCP pull-only; automatic Desktop push/idle wake is not connected.\n" : "") + `Saved rooms: ${subscriptions(db, identity).map((s) => `${s.chat} (${s.seat})`).join(", ") || "(none)"}
 ` + (conflicts.length ? `Restore conflicts:
 ${conflicts.join("\n")}` : "") + db.prepare(
             `SELECT message_id,chat,state FROM delivery_receipts

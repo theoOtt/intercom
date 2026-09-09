@@ -14,13 +14,14 @@ import {
 } from '../bridge/chat-db.mjs'
 
 const sleep = (ms) => new Promise((resolvePromise) => setTimeout(resolvePromise, ms))
+const metadataMode = process.env.INTERCOM_TEST_METADATA === '1'
 // Keep the database inside the thread's writable workspace. Codex sandboxing can
 // give MCP subprocesses a private view of OS temporary directories.
 const temp = mkdtempSync(join(process.cwd(), '.intercom-codex-env-'))
 const codexHome = join(temp, '.codex')
 const dbPath = join(temp, 'chat.db')
 const identityFile = join(temp, 'identity')
-const bridgePath = resolve('bridge/bridge.mjs')
+const bridgePath = resolve(process.env.INTERCOM_BRIDGE_PATH || 'bridge/bridge.mjs')
 let provisional = `codex-startup:${randomUUID()}`
 mkdirSync(codexHome, { recursive: true })
 writeFileSync(identityFile, `${provisional}\n`)
@@ -48,7 +49,8 @@ const dynamicMcpEnv = {
   CHAT_AUTOJOIN_PROJECT: '1',
   CHAT: 'environment-test',
   SEAT: 'reviewer',
-  CHAT_IDENTITY_FILE: identityFile,
+  CHAT_IDENTITY_FILE: metadataMode ? '' : identityFile,
+  CHAT_IDENTITY: '',
 }
 const serverArgs = ['app-server', '--listen', endpoint]
 for (const [name, value] of Object.entries(dynamicMcpEnv)) {
@@ -126,6 +128,12 @@ try {
   if (!chatText.includes('environment-test (seat reviewer)')) {
     throw new Error(`Dynamic chat/seat configuration was not inherited: ${JSON.stringify(chatResult)}`)
   }
+  if (!chatText.includes(`Identity: codex:${result.thread.id}`)) {
+    throw new Error(`Wrong executor task identity: ${chatText}`)
+  }
+  if (metadataMode && !chatText.includes('MCP pull-only')) {
+    throw new Error(`Metadata-only session did not report delivery limitation: ${chatText}`)
+  }
   await client.request('mcpServer/tool/call', {
     server: 'intercom',
     threadId: result.thread.id,
@@ -190,7 +198,7 @@ try {
     )
   }
   process.stdout.write(
-    'PASS: Codex started Intercom, exposed all seven tools, inherited its environment, and persisted runtime room join/leave boundaries\n'
+    `PASS: Codex started Intercom, exposed all seven tools, ${metadataMode ? 'bound executor task metadata without a launcher' : 'inherited its environment'}, and persisted runtime room join/leave boundaries\n`
   )
   client.close()
 } catch (error) {
