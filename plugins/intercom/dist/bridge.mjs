@@ -16725,6 +16725,7 @@ import { basename, dirname as dirname2, join as join2 } from "node:path";
 import { homedir as homedir2 } from "node:os";
 import { mkdirSync, readFileSync } from "node:fs";
 import { randomUUID as randomUUID4 } from "node:crypto";
+import { fileURLToPath } from "node:url";
 
 // bridge/codex-metadata.mjs
 var UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -17485,6 +17486,29 @@ var attachmentError = null;
 var conflicts = [];
 var metadataIdentity = null;
 var desktopRelay = null;
+var projectFromRoots = process.env.CHAT_PROJECT_FROM_ROOTS === "1" && !process.env.CHAT && !process.env.CHAT_PROJECT;
+var projectReady = !projectFromRoots;
+var projectInitialization;
+var projectWarning = "";
+async function initializeProject() {
+  if (projectReady || !server.getClientVersion()) return;
+  if (!projectInitialization) projectInitialization = (async () => {
+    startupChat = null;
+    if (/^(1|true|yes|on)$/i.test(process.env.CHAT_AUTOJOIN_PROJECT ?? "1")) {
+      try {
+        if (!server.getClientCapabilities()?.roots) throw new Error("host does not expose workspace roots");
+        const { roots } = await server.listRoots({}, { timeout: 5e3 });
+        if (roots.length !== 1 || !roots[0].uri.startsWith("file:")) throw new Error("workspace root is not unambiguous");
+        startupChat = basename(fileURLToPath(roots[0].uri)).replace(/[^a-zA-Z0-9._-]/g, "-");
+      } catch (error2) {
+        projectWarning = `Project autojoin unavailable (${error2.message}); use join({chat,seat}). Saved rooms still restore.`;
+        log(projectWarning);
+      }
+    }
+    projectReady = true;
+  })();
+  await projectInitialization;
+}
 function refreshMemberships() {
   joined.clear();
   for (const row of liveMemberships(db, identity, connection)) {
@@ -17497,6 +17521,7 @@ function refreshMemberships() {
 }
 function activateIdentity() {
   if (identity || attachmentError) return;
+  if (!projectReady) return;
   if (!server.getClientVersion()) return;
   const candidate = metadataIdentity || currentIdentity();
   if (/codex/i.test(server.getClientVersion()?.name || "") && candidate === FALLBACK_IDENTITY) return;
@@ -17625,6 +17650,7 @@ var TOOLS = [
 ];
 server.setRequestHandler(ListToolsRequestSchema, async () => ({ tools: TOOLS }));
 server.setRequestHandler(CallToolRequestSchema, async (req) => {
+  await initializeProject();
   let supplied = null;
   if (/codex/i.test(server.getClientVersion()?.name || "")) {
     const thread = codexThreadId(req.params._meta);
@@ -17669,7 +17695,8 @@ server.setRequestHandler(CallToolRequestSchema, async (req) => {
           `You are in: ${mine.length ? mine.join(", ") : "(none)"}
 Available chats: ${all.length ? all.join(", ") : "(none)"}
 Identity: ${identity}
-` + (metadataIdentity ? desktopRelay ? `Delivery: Desktop IPC relay \u2014 ${desktopRelay.state}
+` + (projectWarning ? `${projectWarning}
+` : "") + (metadataIdentity ? desktopRelay ? `Delivery: Desktop IPC relay \u2014 ${desktopRelay.state}
 ` : "Delivery: MCP pull-only; Desktop relay disabled.\n" : "") + `Saved rooms: ${subscriptions(db, identity).map((s) => `${s.chat} (${s.seat})`).join(", ") || "(none)"}
 ` + (conflicts.length ? `Restore conflicts:
 ${conflicts.join("\n")}` : "") + db.prepare(
@@ -17765,7 +17792,9 @@ if (!startupChat && /^(1|true|yes|on)$/i.test(process.env.CHAT_AUTOJOIN_PROJECT 
   startupChat = projectChat();
 }
 activateIdentity();
-setInterval(activateIdentity, 250);
+setInterval(() => {
+  void initializeProject().then(activateIdentity).catch((error2) => log(error2.message));
+}, 250);
 setInterval(() => {
   void desktopRelay?.tick();
 }, 1200);

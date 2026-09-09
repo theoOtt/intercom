@@ -11,6 +11,7 @@ import { fileURLToPath } from 'node:url'
 const ROOT = dirname(dirname(fileURLToPath(import.meta.url)))
 const CLAUDE_MANIFEST = join(ROOT, 'plugins', 'intercom', '.claude-plugin', 'plugin.json')
 const CODEX_MANIFEST = join(ROOT, 'plugins', 'intercom', '.codex-plugin', 'plugin.json')
+const PORTABLE_MANIFEST = join(ROOT, 'plugins', 'intercom', 'plugin.json')
 const BRIDGE_PACKAGE = join(ROOT, 'bridge', 'package.json')
 
 const fail = (message) => {
@@ -58,6 +59,7 @@ function setVersion(path, value) {
 
 setVersion(CLAUDE_MANIFEST, next)
 setVersion(CODEX_MANIFEST, codexNext)
+setVersion(PORTABLE_MANIFEST, codexNext)
 setVersion(BRIDGE_PACKAGE, next)
 
 console.log(`\n${current} -> ${next}${dryRun ? ' (dry run, nothing written)' : ''}`)

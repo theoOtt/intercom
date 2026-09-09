@@ -24,6 +24,7 @@ import { basename, dirname, join } from 'node:path'
 import { homedir } from 'node:os'
 import { mkdirSync, readFileSync } from 'node:fs'
 import { randomUUID } from 'node:crypto'
+import { fileURLToPath } from 'node:url'
 import { codexThreadId } from './codex-metadata.mjs'
 import { DesktopRelay } from '../codex/desktop-relay.mjs'
 import {
@@ -90,6 +91,32 @@ let attachmentError = null
 let conflicts = []
 let metadataIdentity = null
 let desktopRelay = null
+const projectFromRoots = process.env.CHAT_PROJECT_FROM_ROOTS === '1' && !process.env.CHAT && !process.env.CHAT_PROJECT
+let projectReady = !projectFromRoots
+let projectInitialization
+let projectWarning = ''
+
+async function initializeProject() {
+  if (projectReady || !server.getClientVersion()) return
+  if (!projectInitialization) projectInitialization = (async () => {
+    // Portable MCP processes start in the plugin directory. Ask the MCP host
+    // for its workspace instead of auto-joining the plugin/version directory.
+    startupChat = null
+    if (/^(1|true|yes|on)$/i.test(process.env.CHAT_AUTOJOIN_PROJECT ?? '1')) {
+      try {
+        if (!server.getClientCapabilities()?.roots) throw new Error('host does not expose workspace roots')
+        const { roots } = await server.listRoots({}, { timeout: 5000 })
+        if (roots.length !== 1 || !roots[0].uri.startsWith('file:')) throw new Error('workspace root is not unambiguous')
+        startupChat = basename(fileURLToPath(roots[0].uri)).replace(/[^a-zA-Z0-9._-]/g, '-')
+      } catch (error) {
+        projectWarning = `Project autojoin unavailable (${error.message}); use join({chat,seat}). Saved rooms still restore.`
+        log(projectWarning)
+      }
+    }
+    projectReady = true
+  })()
+  await projectInitialization
+}
 
 function refreshMemberships() {
   joined.clear()
@@ -104,6 +131,7 @@ function refreshMemberships() {
 
 function activateIdentity() {
   if (identity || attachmentError) return
+  if (!projectReady) return
   if (!server.getClientVersion()) return // wait for the MCP host's initialize handshake
   const candidate = metadataIdentity || currentIdentity()
   // Desktop does not run the CLI launcher. Its executor identifies the task in
@@ -261,6 +289,7 @@ const TOOLS = [
 server.setRequestHandler(ListToolsRequestSchema, async () => ({ tools: TOOLS }))
 
 server.setRequestHandler(CallToolRequestSchema, async (req) => {
+  await initializeProject()
   let supplied = null
   if (/codex/i.test(server.getClientVersion()?.name || '')) {
     const thread = codexThreadId(req.params._meta)
@@ -311,6 +340,7 @@ server.setRequestHandler(CallToolRequestSchema, async (req) => {
           `You are in: ${mine.length ? mine.join(', ') : '(none)'}\n` +
             `Available chats: ${all.length ? all.join(', ') : '(none)'}\n` +
             `Identity: ${identity}\n` +
+            (projectWarning ? `${projectWarning}\n` : '') +
             (metadataIdentity ? (desktopRelay
               ? `Delivery: Desktop IPC relay — ${desktopRelay.state}\n`
               : 'Delivery: MCP pull-only; Desktop relay disabled.\n') : '') +
@@ -430,7 +460,7 @@ if (!startupChat && /^(1|true|yes|on)$/i.test(process.env.CHAT_AUTOJOIN_PROJECT 
   startupChat = projectChat()
 }
 activateIdentity()
-setInterval(activateIdentity, 250)
+setInterval(() => { void initializeProject().then(activateIdentity).catch(error => log(error.message)) }, 250)
 setInterval(() => { void desktopRelay?.tick() }, 1200)
 
 // Poll every joined chat; push new peer messages as channel notifications.

@@ -34,6 +34,11 @@ from inheriting another session's direct history. Resuming preserves identity; f
 
 ## Requirements
 
+Version 0.5.3 fixes Codex marketplace startup. It uses the portable root `plugin.json`
+and `mcp.json` format so Codex resolves the installed executable path correctly.
+The `.codex-plugin` presentation overlay and Claude's separate manifest remain present.
+On hosts without MCP workspace-root support, join a room explicitly; saved rooms still restore.
+
 Version 0.5.2 adds automatic incoming messages for macOS Codex Desktop through its existing
 runtime. After opening/resuming a task, call `chats()` once to reconnect saved rooms. No custom
 Desktop launcher or pairing changes are needed. See the compatibility limits below.
@@ -95,7 +100,7 @@ claude plugin update intercom@intercom
 
 `claude plugin update` compares the manifest version, not the git commit, and reports "already at
 the latest version" when it matches. Every change that should reach installed machines has to bump
-the version, which lives in three files. Use the bump script so they stay in step:
+the version, which lives in four files. Use the bump script so they stay in step:
 
 ```bash
 cd bridge && yarn bump patch      # or minor, major, or an explicit x.y.z; add --dry-run to preview
@@ -204,6 +209,13 @@ and recipient. The SQLite file is a local collaboration store, not encrypted pri
 machine administrators can still inspect it.
 
 ## Tests
+
+The package-install regression test installs into an isolated Codex home and starts the
+plugin through marketplace discovery (no command, cwd, or bridge-path overrides):
+
+```bash
+node --no-warnings codex/test-plugin-install.mjs
+```
 
 ```bash
 cd bridge

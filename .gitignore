@@ -8,5 +8,6 @@ bridge/node_modules/
 .env
 .env.*
 mcp.json
+!plugins/intercom/mcp.json
 alias.sh
 codex-alias.sh

@@ -1,0 +1,11 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/mcp.schema.json",
+  "mcpServers": {
+    "intercom": {
+      "type": "stdio",
+      "command": "./scripts/launch-intercom.mjs",
+      "args": [],
+      "env": { "CHAT_AUTOJOIN_PROJECT": "1", "CHAT_PROJECT_FROM_ROOTS": "1" }
+    }
+  }
+}
