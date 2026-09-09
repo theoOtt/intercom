@@ -7,8 +7,8 @@ description: Coordinate and exchange messages with other live Claude Code or Cod
 
 Intercom is local chat between Claude Code and Codex sessions using one shared SQLite store.
 The MCP tools work in both products. Claude receives native channel pushes; Codex CLI idle wake uses
-the installed pre-launch relay. Codex Desktop currently supports MCP pull-only operation, not
-automatic Intercom delivery. A session can join several rooms, and every joined room has an
+the installed pre-launch relay. On macOS, Codex Desktop uses its existing local IPC router for
+automatic incoming delivery after the first Intercom tool call. A session can join several rooms, and every joined room has an
 independent durable cursor.
 
 ## Tools
@@ -37,7 +37,7 @@ Exiting preserves subscriptions; explicitly leaving removes them. New sessions a
 room. A saved name occupied by another live identity is reported as a conflict in `chats()`;
 do not silently rename or take over the other session. Duplicate live attachments are rejected.
 
-With the Codex CLI relay, messages enter the active turn through steering; when idle, they start a
+With the Codex CLI or Desktop relay, messages enter the active turn through steering; when idle, they start a
 new turn. Delivery acceptance is not proof of reading. If a log reports `DELIVERY UNCERTAIN`,
 inspect the target transcript before retrying that message to avoid duplicate work.
 
@@ -48,9 +48,14 @@ relay mode, surface the message to the user and reply only at their direction.
 
 Plugin installation provides the skill and MCP server. Codex idle wake additionally requires the
 pre-launch shell integration because it must start App Server before the TUI exists.
-The shell integration does not attach to Codex Desktop. Desktop users can join, send, and check
-`history()` manually; do not promise immediate incoming messages or idle wake there. Desktop's
-built-in task-messaging tools are not an externally callable Intercom notification interface.
+Desktop needs no replacement App Server or custom launcher. Call `chats()` once after the MCP
+connection is recreated to restore rooms and inspect `Delivery`. Its experimental IPC adapter
+only forwards to the task's existing Desktop owner. If the app/owner is unavailable, messages stay
+pending; it never starts a second engine. Closed/unloaded tasks are not guaranteed to wake.
+The interface is private/versioned and currently Unix-socket only; Windows support is not validated.
+`CHAT_DESKTOP_RELAY=0` disables this adapter and retains manual MCP tools. A paused uncertain
+delivery requires transcript reconciliation, not blind resend. Do not modify pairings or app
+security to repair delivery.
 
 When the user explicitly asks to set up or refresh Intercom on this computer, resolve
 `../../scripts/setup.mjs` relative to this `SKILL.md` and run it with Node. The script makes

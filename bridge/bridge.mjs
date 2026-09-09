@@ -25,6 +25,7 @@ import { homedir } from 'node:os'
 import { mkdirSync, readFileSync } from 'node:fs'
 import { randomUUID } from 'node:crypto'
 import { codexThreadId } from './codex-metadata.mjs'
+import { DesktopRelay } from '../codex/desktop-relay.mjs'
 import {
   atomic,
   claimConnection,
@@ -88,6 +89,7 @@ let identity = null
 let attachmentError = null
 let conflicts = []
 let metadataIdentity = null
+let desktopRelay = null
 
 function refreshMemberships() {
   joined.clear()
@@ -130,6 +132,9 @@ function activateIdentity() {
     identity = candidate
     conflicts = attachRooms(db, identity, connection, startupChat, process.env.SEAT)
     refreshMemberships()
+    if (metadataIdentity && process.env.CHAT_DESKTOP_RELAY !== '0') {
+      desktopRelay = new DesktopRelay({db,identity,bridgeConnection:connection,log})
+    }
     log(
       `attached identity="${identity}" connection="${connection}" rooms=${JSON.stringify([...joined.keys()])}`
     )
@@ -306,7 +311,9 @@ server.setRequestHandler(CallToolRequestSchema, async (req) => {
           `You are in: ${mine.length ? mine.join(', ') : '(none)'}\n` +
             `Available chats: ${all.length ? all.join(', ') : '(none)'}\n` +
             `Identity: ${identity}\n` +
-            (metadataIdentity ? 'Delivery: MCP pull-only; automatic Desktop push/idle wake is not connected.\n' : '') +
+            (metadataIdentity ? (desktopRelay
+              ? `Delivery: Desktop IPC relay — ${desktopRelay.state}\n`
+              : 'Delivery: MCP pull-only; Desktop relay disabled.\n') : '') +
             `Saved rooms: ${
               subscriptions(db, identity)
                 .map((s) => `${s.chat} (${s.seat})`)
@@ -424,6 +431,7 @@ if (!startupChat && /^(1|true|yes|on)$/i.test(process.env.CHAT_AUTOJOIN_PROJECT 
 }
 activateIdentity()
 setInterval(activateIdentity, 250)
+setInterval(() => { void desktopRelay?.tick() }, 1200)
 
 // Poll every joined chat; push new peer messages as channel notifications.
 const POLL_MS = 1500
@@ -499,6 +507,7 @@ log(`loops started (poll=${POLL_MS}ms)`)
 // timer. A hard kill (SIGKILL / reaper) can't run this -- those seats free via
 // the ~30s presence-stale path instead.
 function shutdown() {
+  desktopRelay?.stop()
   if (identity)
     try {
       detachConnection(db, identity, 'bridge', connection)

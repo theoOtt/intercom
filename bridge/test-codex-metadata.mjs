@@ -29,7 +29,7 @@ async function start(id, extraEnv = {}) {
     command: process.execPath,
     args: [process.env.INTERCOM_BRIDGE_PATH || fileURLToPath(new URL('./bridge.mjs', import.meta.url))],
     env: { PATH: process.env.PATH, HOME: process.env.HOME, CHAT_DB: dbPath,
-      CHAT: 'same-project', CODEX_THREAD_ID: 'inherited-wrong-parent',
+      CHAT: 'same-project', CHAT_DESKTOP_RELAY: '0', CODEX_THREAD_ID: 'inherited-wrong-parent',
       CLAUDE_CODE_SESSION_ID: 'inherited-claude-parent', ...extraEnv }, stderr: 'pipe',
   })
   transport.stderr.on('data', () => {})

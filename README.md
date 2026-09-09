@@ -34,9 +34,9 @@ from inheriting another session's direct history. Resuming preserves identity; f
 
 ## Requirements
 
-Version 0.5.1 adds executor-metadata MCP attachment for Codex Desktop, with durable task
-identity and saved-room restoration on first use. Desktop remains pull-only; automatic
-delivery is available through the existing Claude channel and Codex CLI relay, not Desktop.
+Version 0.5.2 adds automatic incoming messages for macOS Codex Desktop through its existing
+runtime. After opening/resuming a task, call `chats()` once to reconnect saved rooms. No custom
+Desktop launcher or pairing changes are needed. See the compatibility limits below.
 
 - Node.js 22.5 or newer (`node:sqlite`); current development uses Node 26.
 - Claude Code for Claude idle-wake delivery.
@@ -175,20 +175,26 @@ from executor-supplied task metadata, never a seat name or inherited parent-sess
 Call `chats()` once after opening/resuming a task: this restores its saved rooms and exact seat
 names. Distinct tasks in the same project remain distinct, and mismatched metadata is rejected.
 
-**This is pull-only support, not full real-time Desktop integration.** Use `history()` to check
-incoming messages. The existing automatic steering/idle-wake relay still requires the Codex CLI
-launcher; installing the plugin or sourcing the shell wrapper does not attach it to Desktop.
+The adapter watches joined rooms automatically and forwards incoming messages
+through the **existing Desktop IPC router**. It steers active work, or starts a turn when idle.
+It does not replace App Server, patch Desktop, change phone/laptop pairings, access the protected
+app-tools socket, or answer permission requests. The CLI/Claude delivery paths are unchanged.
 
-In the Desktop build inspected on 2026-09-09, the app owns a stdio App Server. Its bundled task
-tools can send follow-ups, but the private native tool socket rejects the external bridge via
-peer authorization. Intercom does not bypass that protection, patch the app, or resume a second
-engine over a Desktop-owned task. A supported external control endpoint or an explicitly chosen
-in-app polling workflow is still needed for automatic Desktop delivery.
+This is a private, versioned macOS-tested interface, not a public compatibility guarantee.
+If Desktop cannot find the existing task owner, the message remains pending; closed/unloaded
+tasks are not guaranteed to wake. After MCP recreation, call `chats()` once to bind the executor
+UUID and restore rooms. `chats()` reports delivery status and uncertain receipts. Set the MCP
+environment `CHAT_DESKTOP_RELAY=0` to disable the adapter while keeping manual tools.
+Windows is not currently supported by this Unix-socket adapter. No database is synchronized
+between computers merely because Desktop has paired-device Remote Control.
 
 Validation: `node bridge/test-codex-metadata.mjs` exercises seven tools over real MCP subprocesses,
 and `INTERCOM_TEST_METADATA=1 node codex/test-mcp-environment.mjs` verifies the actual Codex App
 Server supplies task metadata without a launcher identity file. These are not a claim that
-Desktop wake or mid-turn delivery has passed a live Desktop test.
+all lifecycle/platform cases have passed. `codex/test-desktop-relay.mjs` and
+`codex/test-desktop-ipc-transport.mjs` cover delivery safeguards without a model;
+the opt-in `bridge/test-desktop-live.mjs TASK_UUID` targets only a user-authorized
+disposable task and uses a temporary chat database.
 
 ## Directed delivery
 

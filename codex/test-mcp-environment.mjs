@@ -51,6 +51,7 @@ const dynamicMcpEnv = {
   SEAT: 'reviewer',
   CHAT_IDENTITY_FILE: metadataMode ? '' : identityFile,
   CHAT_IDENTITY: '',
+  CHAT_DESKTOP_RELAY: '0',
 }
 const serverArgs = ['app-server', '--listen', endpoint]
 for (const [name, value] of Object.entries(dynamicMcpEnv)) {
