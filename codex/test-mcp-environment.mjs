@@ -93,7 +93,7 @@ try {
   // thread creation. Let that one-time config refresh settle before MCP startup.
   await sleep(750)
 
-  const expectedTools = ['chats', 'history', 'join', 'leave', 'rename', 'send', 'who']
+  const expectedTools = ['chats', 'delivery', 'history', 'join', 'leave', 'listen', 'receive', 'rename', 'send', 'who']
   // The first inventory request triggers startup. Wait for the asynchronous
   // ready notification before asking for the complete tool inventory.
   await client.request('mcpServerStatus/list', {
@@ -199,7 +199,7 @@ try {
     )
   }
   process.stdout.write(
-    `PASS: Codex started Intercom, exposed all seven tools, ${metadataMode ? 'bound executor task metadata without a launcher' : 'inherited its environment'}, and persisted runtime room join/leave boundaries\n`
+    `PASS: Codex started Intercom, exposed all ten tools, ${metadataMode ? 'bound executor task metadata without a launcher' : 'inherited its environment'}, and persisted runtime room join/leave boundaries\n`
   )
   client.close()
 } catch (error) {

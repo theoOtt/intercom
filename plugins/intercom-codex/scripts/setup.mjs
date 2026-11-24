@@ -1,0 +1,178 @@
+#!/usr/bin/env node
+import {desktopProvisionPlan,desktopPreflight,desktopConfigurationPreflight,provisionDesktop} from './setup-desktop.mjs'
+// Recoverable machine bootstrap for capabilities that must exist before an
+// interactive agent session starts (shared DB + Claude channel/Codex relay shell wrappers).
+import { spawnSync } from 'node:child_process'
+import {
+  copyFileSync,
+  cpSync,
+  existsSync,
+  mkdirSync,
+  readFileSync,
+  renameSync,
+  writeFileSync,
+} from 'node:fs'
+import { homedir } from 'node:os'
+import { dirname, join } from 'node:path'
+import { fileURLToPath } from 'node:url'
+import { DatabaseSync, backup } from 'node:sqlite'
+import { openDb } from '../runtime/bridge/chat-db.mjs'
+
+const PLUGIN_ROOT = dirname(dirname(fileURLToPath(import.meta.url)))
+const USER_HOME = process.env.INTERCOM_HOME || homedir()
+const CODEX_HOME = process.env.CODEX_HOME || join(USER_HOME, '.codex')
+const CLAUDE_HOME = process.env.CLAUDE_CONFIG_DIR || join(USER_HOME, '.claude')
+const DB_PATH = process.env.CHAT_DB || join(CLAUDE_HOME, 'intercom', 'chat.db')
+const RUNTIME_DIR = join(USER_HOME, '.local', 'share', 'intercom')
+const SHELL_FILE = join(USER_HOME, '.config', 'intercom', 'shell.zsh')
+const ZSHRC = join(USER_HOME, '.zshrc')
+const STAMP = new Date().toISOString().replace(/[:.]/g, '-')
+const BACKUP_DIR = join(CLAUDE_HOME, '_backups', `intercom-plugin-${STAMP}`)
+
+mkdirSync(BACKUP_DIR, { recursive: true, mode: 0o700 })
+
+function backupFile(path) {
+  if (!existsSync(path)) return null
+  const target = join(BACKUP_DIR, path.replace(/^\//, '').replaceAll('/', '__'))
+  if (!existsSync(target)) copyFileSync(path, target)
+  return target
+}
+
+function backupAndMoveDirectory(path) {
+  if (!existsSync(path)) return null
+  const target = join(BACKUP_DIR, path.replace(/^\//, '').replaceAll('/', '__'))
+  if (existsSync(target)) return target
+  renameSync(path, target)
+  return target
+}
+
+function hasCommand(command) {
+  return spawnSync(command, ['--version'], { encoding: 'utf8', stdio: 'pipe' }).status === 0
+}
+
+function run(command, args) {
+  const result = spawnSync(command, args, { encoding: 'utf8', stdio: 'pipe' })
+  if (result.status !== 0) {
+    throw new Error(`${command} ${args.join(' ')} failed\n${result.stdout || ''}${result.stderr || ''}`.trim())
+  }
+  return result.stdout
+}
+
+async function prepareDatabase() {
+  mkdirSync(dirname(DB_PATH), { recursive: true, mode: 0o700 })
+  if (existsSync(DB_PATH)) {
+    const source = new DatabaseSync(DB_PATH)
+    await backup(source, join(BACKUP_DIR, 'chat.db'))
+    source.close()
+  }
+  const db = openDb(DB_PATH)
+  const integrity = db.prepare('PRAGMA integrity_check').get().integrity_check
+  db.close()
+  if (integrity !== 'ok') throw new Error(`database integrity check failed: ${integrity}`)
+}
+
+function installRuntime() {
+  const source = join(PLUGIN_ROOT, 'runtime')
+  if (!existsSync(source)) throw new Error(`plugin runtime is missing: ${source}`)
+  if (existsSync(RUNTIME_DIR)) {
+    const runtimeBackup = join(BACKUP_DIR, 'runtime')
+    cpSync(RUNTIME_DIR, runtimeBackup, { recursive: true, preserveTimestamps: true })
+  }
+  mkdirSync(RUNTIME_DIR, { recursive: true, mode: 0o700 })
+  cpSync(source, RUNTIME_DIR, { recursive: true, force: true, preserveTimestamps: true })
+  const bridgeTarget = join(RUNTIME_DIR, 'bridge', 'bridge.mjs')
+  mkdirSync(dirname(bridgeTarget), { recursive: true })
+  copyFileSync(join(PLUGIN_ROOT, 'dist', 'bridge.mjs'), bridgeTarget)
+  const skillTarget = join(RUNTIME_DIR, 'skills', 'intercom', 'SKILL.md')
+  mkdirSync(dirname(skillTarget), { recursive: true })
+  copyFileSync(join(PLUGIN_ROOT, 'skills', 'intercom', 'SKILL.md'), skillTarget)
+}
+
+function removeLegacyCodexMcp() {
+  const configPath = join(CODEX_HOME, 'config.toml')
+  const config = existsSync(configPath) ? readFileSync(configPath, 'utf8') : ''
+  // `codex mcp get intercom` also sees the newly installed plugin server. Only
+  // invoke the config mutator when a legacy top-level TOML entry actually exists.
+  if (!/^\[mcp_servers\.intercom\]/m.test(config)) return
+  // Only codex itself can safely rewrite its config. Without a runnable binary
+  // (not installed, or blocked by Gatekeeper) leave the entry for a later run.
+  if (!hasCommand('codex')) {
+    console.log(`codex is not runnable; leaving the legacy [mcp_servers.intercom] entry in ${configPath}`)
+    return
+  }
+  backupFile(configPath)
+  run('codex', ['mcp', 'remove', 'intercom'])
+}
+
+function retireLegacySkills() {
+  backupAndMoveDirectory(join(CODEX_HOME, 'skills', 'intercom'))
+  backupAndMoveDirectory(join(CLAUDE_HOME, 'skills', 'intercom'))
+}
+
+function installShellIntegration() {
+  mkdirSync(dirname(SHELL_FILE), { recursive: true, mode: 0o700 })
+  backupFile(SHELL_FILE)
+  const launch = join(RUNTIME_DIR, 'codex', 'launch.mjs')
+  const skill = join(RUNTIME_DIR, 'skills', 'intercom', 'SKILL.md')
+  writeFileSync(SHELL_FILE, `# Generated by the Intercom marketplace plugin.\n` +
+    `_intercom_claude_passthrough() {\n` +
+    `  case "\${1:-}" in\n` +
+    `    agents|auth|auto-mode|doctor|gateway|install|mcp|plugin|plugins|remote-control|setup-token|update|help|-h|--help|-v|--version) return 0 ;;\n` +
+    `    *) return 1 ;;\n` +
+    `  esac\n` +
+    `}\n` +
+  // --channels only accepts plugins on Anthropic's approved channels allowlist
+  // (tengu_harbor_ledger: the official discord/telegram/imessage plugins). Any other
+  // marketplace is silently skipped and idle-wake never fires, so a personal plugin
+  // has to go through the development flag.
+    `claude() {\n` +
+    `  if _intercom_claude_passthrough "$@"; then\n` +
+    `    command claude "$@"\n` +
+    `  else\n` +
+    `    command claude --dangerously-load-development-channels plugin:intercom@intercom "$@"\n` +
+    `  fi\n` +
+    `}\n` +
+    `_intercom_codex_passthrough() {\n` +
+    `  case "\${1:-}" in\n` +
+    `    agents|exec|review|login|logout|mcp|plugin|mcp-server|app-server|remote-control|app|completion|update|doctor|sandbox|debug|apply|queue|archive|delete|migrate-rollouts|unarchive|cloud|exec-server|features|help|-h|--help|-V|--version|--remote|--remote=*) return 0 ;;\n` +
+    `    *) return 1 ;;\n` +
+    `  esac\n` +
+    `}\n` +
+    `codex-intercom() { INTERCOM_SKILL_PATH="${skill}" node "${launch}" "$@"; }\n` +
+    `codex() {\n` +
+    `  if _intercom_codex_passthrough "$@"; then\n` +
+    `    command codex "$@"\n` +
+    `  else\n` +
+    `    INTERCOM_SKILL_PATH="${skill}" node "${launch}" -- "$@"\n` +
+    `  fi\n` +
+    `}\n`, { mode: 0o644 })
+
+  backupFile(ZSHRC)
+  const old = existsSync(ZSHRC) ? readFileSync(ZSHRC, 'utf8') : ''
+  const kept = old.split('\n').filter((line) => {
+    if (line.includes('/intercom/alias.sh')) return false
+    if (line.includes('/intercom/codex-alias.sh')) return false
+    if (line.includes(SHELL_FILE)) return false
+    return true
+  }).join('\n').replace(/\n+$/, '')
+  writeFileSync(
+    ZSHRC,
+    `${kept}\n\n# Intercom marketplace plugin\nsource "${SHELL_FILE}"\n`,
+    { mode: 0o600 }
+  )
+}
+
+const desktopPlan=desktopProvisionPlan({pluginRoot:PLUGIN_ROOT,userHome:USER_HOME,database:DB_PATH,codexHome:CODEX_HOME})
+desktopPreflight(desktopPlan)
+process.stdout.write(`Intercom plugin setup from ${PLUGIN_ROOT}\n`)
+process.stdout.write(`Recoverable backups: ${BACKUP_DIR}\n`)
+await prepareDatabase()
+desktopConfigurationPreflight(desktopPlan)
+installRuntime()
+provisionDesktop(desktopPlan)
+removeLegacyCodexMcp()
+retireLegacySkills()
+installShellIntegration()
+process.stdout.write(`Shared database: ${DB_PATH}\n`)
+process.stdout.write(`Stable runtime: ${RUNTIME_DIR}\n`)
+process.stdout.write('Desktop service/configuration provisioned. Hooks require normal host admission/trust; setup does not change it. Open a new terminal for updated CLI wrappers. Existing Desktop/Claude processes were not restarted.\n')

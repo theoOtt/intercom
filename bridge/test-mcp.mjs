@@ -47,17 +47,18 @@ const assert = (condition, message) => {
   process.stdout.write(`PASS: ${message}\n`)
 }
 
+const aId = `claude:${randomUUID()}`, bId = `codex:${randomUUID()}`, cId = `codex:${randomUUID()}`
 const sessions = []
 try {
-  const a = await session('a', 'claude:session-a')
-  const b = await session('b', 'codex:session-b')
-  const c = await session('c', 'codex:session-c')
+  const a = await session('a', aId)
+  const b = await session('b', bId)
+  const c = await session('c', cId)
   sessions.push(a, b, c)
 
   const tools = (await a.client.listTools()).tools.map((tool) => tool.name).sort()
   assert(
-    JSON.stringify(tools) === JSON.stringify(['chats', 'history', 'join', 'leave', 'rename', 'send', 'who']),
-    'bridge exposes all seven standard MCP tools'
+    JSON.stringify(tools) === JSON.stringify(['chats', 'delivery', 'history', 'join', 'leave', 'listen', 'receive', 'rename', 'send', 'who']),
+    'bridge exposes all ten MCP tools'
   )
 
   await a.client.callTool({ name: 'join', arguments: { chat: 'direct-test', seat: 'claude' } })
@@ -93,13 +94,13 @@ try {
   })
   let inspect = openDb(dbPath)
   let bSeats = listSeats(inspect, 'direct-test')
-    .filter((seat) => seat.identity === 'codex:session-b')
+    .filter((seat) => seat.identity === bId)
   assert(
     bSeats.length === 1 && bSeats[0].seat === 'codex-b-renamed',
     'changing seat in one room releases the previous seat instead of leaking membership'
   )
   assert(
-    getDeliveryCursor(inspect, 'direct-test', 'codex:session-b', 'codex-app-server') !== null,
+    getDeliveryCursor(inspect, 'direct-test', bId, 'codex-app-server') !== null,
     'Codex room join seeds an independent wake cursor'
   )
   inspect.close()
@@ -107,7 +108,7 @@ try {
   await b.client.callTool({ name: 'join', arguments: { chat: 'second-room', seat: 'codex-b' } })
   inspect = openDb(dbPath)
   assert(
-    getDeliveryCursor(inspect, 'second-room', 'codex:session-b', 'codex-app-server') !== null,
+    getDeliveryCursor(inspect, 'second-room', bId, 'codex-app-server') !== null,
     'runtime second-room join seeds its own wake cursor'
   )
   inspect.close()
@@ -115,7 +116,7 @@ try {
   await b.client.callTool({ name: 'leave', arguments: { chat: 'second-room' } })
   inspect = openDb(dbPath)
   assert(
-    getDeliveryCursor(inspect, 'second-room', 'codex:session-b', 'codex-app-server') === null,
+    getDeliveryCursor(inspect, 'second-room', bId, 'codex-app-server') === null,
     'explicit room leave removes only that room wake cursor'
   )
   inspect.close()

@@ -8,7 +8,7 @@
       "name": "intercom",
       "source": {
         "source": "local",
-        "path": "./plugins/intercom"
+        "path": "./plugins/intercom-codex"
       },
       "policy": {
         "installation": "AVAILABLE",

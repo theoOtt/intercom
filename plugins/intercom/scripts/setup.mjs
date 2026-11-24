@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+import {desktopProvisionPlan,desktopPreflight,desktopConfigurationPreflight,provisionDesktop} from './setup-desktop.mjs'
 // Recoverable machine bootstrap for capabilities that must exist before an
 // interactive agent session starts (shared DB + Claude channel/Codex relay shell wrappers).
 import { spawnSync } from 'node:child_process'
@@ -161,13 +162,17 @@ function installShellIntegration() {
   )
 }
 
+const desktopPlan=desktopProvisionPlan({pluginRoot:PLUGIN_ROOT,userHome:USER_HOME,database:DB_PATH,codexHome:CODEX_HOME})
+desktopPreflight(desktopPlan)
 process.stdout.write(`Intercom plugin setup from ${PLUGIN_ROOT}\n`)
 process.stdout.write(`Recoverable backups: ${BACKUP_DIR}\n`)
 await prepareDatabase()
+desktopConfigurationPreflight(desktopPlan)
 installRuntime()
+provisionDesktop(desktopPlan)
 removeLegacyCodexMcp()
 retireLegacySkills()
 installShellIntegration()
 process.stdout.write(`Shared database: ${DB_PATH}\n`)
 process.stdout.write(`Stable runtime: ${RUNTIME_DIR}\n`)
-process.stdout.write('Setup complete. Open a new terminal and restart Claude Code and Codex sessions.\n')
+process.stdout.write('Desktop service/configuration provisioned. Hooks require normal host admission/trust; setup does not change it. Open a new terminal for updated CLI wrappers. Existing Desktop/Claude processes were not restarted.\n')

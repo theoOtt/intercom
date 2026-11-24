@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import { build } from 'esbuild'
-import { copyFileSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
+import { copyFileSync, mkdirSync, readFileSync, writeFileSync, readdirSync, chmodSync, cpSync, rmSync } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
@@ -29,6 +29,7 @@ for (const relative of [
   'codex/app-server-client.mjs',
   'bridge/chat-db.mjs',
   'bridge/session-store.mjs',
+  'bridge/sqlite-recovery.mjs',
 ]) {
   const target = join(PLUGIN, 'runtime', relative)
   mkdirSync(dirname(target), { recursive: true })
@@ -36,3 +37,26 @@ for (const relative of [
 }
 
 process.stdout.write(`Built Intercom plugin runtime at ${PLUGIN}\n`)
+
+// Package canonical persistent-service sources and portable lifecycle hooks.
+const helpers = join(ROOT, 'scripts')
+for (const name of readdirSync(helpers)) {
+  if (!name.endsWith('.mjs') && name !== 'desktop-delivery.json') continue
+  copyFileSync(join(helpers,name),join(PLUGIN,'scripts',name))
+  if (name.endsWith('.json')) chmodSync(join(PLUGIN,'scripts',name),0o600)
+}
+for (const name of ['delivery-core','desktop-queue','busy-turn','busy-receive','busy-wait'])
+  copyFileSync(join(ROOT,'codex',name+'.mjs'),join(PLUGIN,'scripts',name+'.mjs'))
+await build({entryPoints:[join(ROOT,'codex','desktop-ipc.mjs')],outfile:join(PLUGIN,'scripts','desktop-owner.mjs'),bundle:true,platform:'node',format:'esm',target:'node22',legalComments:'eof'})
+
+// Codex's native plugin loader currently admits hooks; Agent Plugins format does not.
+// Both consumer distributions are generated from the same canonical source/runtime.
+const CODEX_PLUGIN=join(ROOT,'plugins','intercom-codex')
+rmSync(CODEX_PLUGIN,{recursive:true,force:true})
+cpSync(PLUGIN,CODEX_PLUGIN,{recursive:true})
+rmSync(join(CODEX_PLUGIN,'plugin.json'))
+rmSync(join(CODEX_PLUGIN,'mcp.json'))
+const codexMcp=JSON.parse(readFileSync(join(PLUGIN,'mcp.json'),'utf8'))
+Object.assign(codexMcp.mcpServers.intercom,{command:'node',args:['./scripts/launch-intercom.mjs'],cwd:'.'})
+writeFileSync(join(CODEX_PLUGIN,'.mcp.json'),JSON.stringify(codexMcp,null,2)+'\n')
+console.log(`Built Codex-native Intercom distribution at ${CODEX_PLUGIN}`)

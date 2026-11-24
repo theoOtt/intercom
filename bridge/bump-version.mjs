@@ -29,8 +29,9 @@ if (!target) {
 
 const readJson = (path) => JSON.parse(readFileSync(path, 'utf8'))
 const current = readJson(CLAUDE_MANIFEST).version
-const parsed = /^(\d+)\.(\d+)\.(\d+)$/.exec(current)
-if (!parsed) fail(`current version ${current} in ${CLAUDE_MANIFEST} is not x.y.z`)
+const versionPattern = /^(\d+)\.(\d+)\.(\d+)(?:-[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*)?(?:\+[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*)?$/
+const parsed = versionPattern.exec(current)
+if (!parsed) fail(`current version ${current} in ${CLAUDE_MANIFEST} is not a semantic version`)
 const [major, minor, patch] = parsed.slice(1).map(Number)
 
 let next
@@ -39,7 +40,7 @@ switch (target) {
   case 'minor': next = `${major}.${minor + 1}.0`; break
   case 'patch': next = `${major}.${minor}.${patch + 1}`; break
   default:
-    if (!/^\d+\.\d+\.\d+$/.test(target)) fail(`${target} is not patch, minor, major or x.y.z`)
+    if (!versionPattern.test(target)) fail(`${target} is not patch, minor, major or x.y.z`)
     next = target
 }
 if (next === current) fail(`version is already ${current}`)
@@ -62,8 +63,22 @@ setVersion(CODEX_MANIFEST, codexNext)
 setVersion(PORTABLE_MANIFEST, codexNext)
 setVersion(BRIDGE_PACKAGE, next)
 
+// Keep source-advertised consumer metadata aligned; generated distributions are rebuilt next.
+function setSourceVersion(relative, pattern) {
+  const path = join(ROOT, relative)
+  const source = readFileSync(path, 'utf8')
+  const updated = source.replace(pattern, `$1${next}$2`)
+  if (updated === source) fail(`source version field missing or unchanged in ${relative}`)
+  if (!dryRun) writeFileSync(path, updated)
+  console.log(`${dryRun ? 'would set' : 'set'} ${relative} -> ${next}`)
+}
+setSourceVersion('bridge/bridge.mjs', /(name:\s*["']intercom["'],\s*version:\s*["'])[^"']+(["'])/)
+setSourceVersion('bridge/copilot-extension.mjs', /(name:\s*["']copilot-intercom["'],\s*version:\s*["'])[^"']+(["'])/)
+setSourceVersion('codex/app-server-client.mjs', /(title:\s*["']Intercom Relay["'],\s*version:\s*["'])[^"']+(["'])/)
+
 console.log(`\n${current} -> ${next}${dryRun ? ' (dry run, nothing written)' : ''}`)
 if (!dryRun) {
+  console.log('Rebuild both consumer distributions with: cd bridge && yarn build:plugin')
   console.log(`\nnext: git commit -am "Bump plugin version to ${next}" && git push`)
   console.log('then on each machine: claude plugin marketplace update intercom && claude plugin update intercom@intercom')
 }

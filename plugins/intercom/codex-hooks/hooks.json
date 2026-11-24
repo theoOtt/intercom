@@ -1,0 +1,87 @@
+{
+  "hooks": {
+    "UserPromptSubmit": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$PLUGIN_ROOT/scripts/busy-turn.mjs\"",
+            "timeout": 2
+          },
+          {
+            "type": "command",
+            "command": "node \"$PLUGIN_ROOT/scripts/busy-wait.mjs\"",
+            "async": true,
+            "timeout": 7205
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "^mcp__intercom__receive$",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$PLUGIN_ROOT/scripts/busy-receive.mjs\"",
+            "timeout": 2
+          },
+          {
+            "type": "command",
+            "command": "node \"$PLUGIN_ROOT/scripts/busy-wait.mjs\"",
+            "async": true,
+            "timeout": 7205
+          }
+        ]
+      },
+      {
+        "matcher": "^mcp__intercom__listen$",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$PLUGIN_ROOT/scripts/busy-wait.mjs\"",
+            "async": true,
+            "timeout": 7205
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$PLUGIN_ROOT/scripts/busy-turn.mjs\"",
+            "timeout": 2
+          }
+        ]
+      }
+    ],
+    "Interrupt": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$PLUGIN_ROOT/scripts/busy-turn.mjs\"",
+            "timeout": 2
+          }
+        ]
+      }
+    ],
+    "SessionEnd": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$PLUGIN_ROOT/scripts/busy-turn.mjs\"",
+            "timeout": 2
+          }
+        ]
+      }
+    ]
+  }
+}

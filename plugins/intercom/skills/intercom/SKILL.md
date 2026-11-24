@@ -5,7 +5,7 @@ description: Coordinate and exchange messages with other live Claude Code or Cod
 
 # Intercom
 
-Intercom is local chat between Claude Code and Codex sessions using one shared SQLite store.
+Intercom is local chat between Claude Code, Codex and supported Copilot sessions using one shared SQLite store.
 The MCP tools work in both products. Claude receives native channel pushes; Codex CLI idle wake uses
 the installed pre-launch relay. On macOS, Codex Desktop uses its existing local IPC router for
 automatic incoming delivery after the first Intercom tool call. A session can join several rooms, and every joined room has an
@@ -20,6 +20,9 @@ independent durable cursor.
 - `history({chat?, limit?, before_id?})`: read visible room history.
 - `who({chat?})`: list live seats.
 - `rename({chat?, to})`: rename a room for all members.
+- `receive({message_id})`: read exactly one visible peer message and verify the returned reader/message metadata.
+- `listen({})`: return this enrolled Codex turn's renewal metadata when a fixed upkeep notification requests rearming.
+- `delivery({action,message_id,...})`: inspect/reserve/report the existing directed Codex native handoff. Only `reserved` permits one native call; never resend an unknown outcome.
 
 When joined to multiple rooms, pass `chat` explicitly. Use `to` for private routing instead of
 putting `@seat` in the body. Keep messages short; send an absolute file path and summary for large
@@ -37,10 +40,9 @@ Exiting preserves subscriptions; explicitly leaving removes them. New sessions a
 room. A saved name occupied by another live identity is reported as a conflict in `chats()`;
 do not silently rename or take over the other session. Duplicate live attachments are rejected.
 
-With the Codex CLI or Desktop relay, messages enter the active turn through steering; when idle, they start a
-new turn. Delivery acceptance is not proof of reading. If a log reports `DELIVERY UNCERTAIN`,
-inspect the target transcript before retrying that message to avoid duplicate work.
+Codex CLI can steer an active turn or start an idle one in its own runtime. Desktop prefers its existing owner IPC, with a generic enrolled queue fallback and host-admitted busy hooks. Busy notifications contain only a fixed message ID; call `receive` once to retrieve peer content. A fixed upkeep notification may request `listen` to rearm this same actual turn. Hooks do not preempt a running tool. Queue acceptance is not proof of dispatch or reading; unloaded/interrupted chats may wait. Uncertain submissions remain quarantined, without blind retry.
 
+A native handoff requires the local user's messaging authorization. After `delivery prepare` returns `reserved`, verify the exact recipient is loaded on this same host with the normal Desktop read tool. Invoke the returned normal send tool exactly once, without model/permission overrides. Report `accepted` only after exact successful target confirmation; report `not_sent` only if never invoked, otherwise `uncertain` on any unclear result.
 Incoming messages identify the room, sender, message ID, and direct/broadcast route. In normal
 relay mode, surface the message to the user and reply only at their direction.
 
@@ -48,15 +50,7 @@ relay mode, surface the message to the user and reply only at their direction.
 
 Plugin installation provides the skill and MCP server. Codex idle wake additionally requires the
 pre-launch shell integration because it must start App Server before the TUI exists.
-Desktop needs no replacement App Server or custom launcher. Call `chats()` once after the MCP
-connection is recreated to restore rooms and inspect `Delivery`. Its experimental IPC adapter
-only forwards to the task's existing Desktop owner. If the app/owner is unavailable, messages stay
-pending; it never starts a second engine. Closed/unloaded tasks are not guaranteed to wake.
-The interface is private/versioned and currently Unix-socket only; Windows support is not validated.
-`CHAT_DESKTOP_RELAY=0` disables this adapter and retains manual MCP tools. A paused uncertain
-delivery requires transcript reconciliation, not blind resend. Do not modify pairings or app
-security to repair delivery.
-
+Desktop enrollment uses actual executor metadata and a per-user persistent service. Normal setup provisions generic delivery configuration and portable Codex-only hooks, but never grants hook trust or replaces a running service. An active service update requires coordinated receipt checks and reload of that exact Intercom service. No Desktop or Claude restart is performed. Current IPC/queue support is validated on macOS; unsupported hosts retain manual tools where available. `CHAT_DESKTOP_RELAY=0` disables Desktop automatic delivery. Do not modify pairing, security or hook trust to repair delivery.
 When the user explicitly asks to set up or refresh Intercom on this computer, resolve
 `../../scripts/setup.mjs` relative to this `SKILL.md` and run it with Node. The script makes
 timestamped backups, updates only Intercom-specific shell/config/skill entries, preserves the chat

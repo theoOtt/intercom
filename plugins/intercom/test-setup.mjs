@@ -46,18 +46,22 @@ sendMessage(db, 'preserved', 'test', 'keep this message')
 db.close()
 
 try {
+  let firstDesktopConfig
   for (let run = 0; run < 2; run++) {
     const result = spawnSync(process.execPath, [setup], {
       cwd: process.cwd(),
       encoding: 'utf8',
       env: {
-        ...process.env,
+        ...process.env,HOME:temp,CHAT_DB:dbPath,INTERCOM_DELIVERY_CONFIG:join(temp,'.config/intercom/desktop-delivery.json'),
         INTERCOM_HOME: temp,
         CODEX_HOME: codexHome,
         CLAUDE_CONFIG_DIR: claudeHome,
       },
     })
     if (result.status !== 0) throw new Error(`${result.stderr}\n${result.stdout}`)
+    const snapshot=JSON.parse(readFileSync(join(temp,'.config/intercom/desktop-delivery.json'),'utf8'))
+    if(run===0){firstDesktopConfig=snapshot;const pending=openDb(dbPath);sendMessage(pending,'preserved','test','future arrival');pending.close()}
+    else assert(JSON.stringify(snapshot)===JSON.stringify(firstDesktopConfig),'rerun preserves generation/cutoff and configuration despite new database arrivals')
   }
 
   const config = readFileSync(join(codexHome, 'config.toml'), 'utf8')
@@ -69,6 +73,19 @@ try {
     assert(config.includes('[mcp_servers.intercom]'), 'setup leaves the legacy Intercom MCP entry alone when codex is not runnable')
   }
 
+  const desktopConfig = JSON.parse(readFileSync(join(temp,'.config/intercom/desktop-delivery.json'),'utf8'))
+  assert(desktopConfig.enabled && desktopConfig.mode==='enrolled-desktop' && desktopConfig.database===dbPath, 'normal fresh-home setup enables generic enrolled delivery using the fixture database')
+  assert(desktopConfig.busyHooks && desktopConfig.idleQueue && !desktopConfig.threadId && !desktopConfig.chat && !desktopConfig.senderIdentity, 'configuration has no baked conversation, room or test-sender scope')
+  assert(existsSync(desktopConfig.registry) && existsSync(join(temp,'Library/LaunchAgents/com.theoott.intercom.desktop-relay.plist')), 'normal setup provisions registry and user LaunchAgent')
+  assert(readFileSync(join(temp,'Library/LaunchAgents/com.theoott.intercom.desktop-relay.plist'),'utf8').includes('<key>CODEX_HOME</key><string>'+codexHome+'</string>'),'service retains the explicitly selected Codex configuration store')
+  assert(existsSync(join(temp,'.local/share/intercom/desktop-service/runtime/scripts/busy-wait.mjs')), 'normal setup installs matching lifecycle hook runtime')
+  const protectedRuntime=readFileSync(join(temp,'.local/share/intercom/desktop-service/runtime/dist/bridge.mjs'))
+  const configPath=join(temp,'.config/intercom/desktop-delivery.json'),configBytes=readFileSync(configPath)
+  writeFileSync(configPath,JSON.stringify({...desktopConfig,database:join(temp,'different.db')}))
+  const held=spawnSync(process.execPath,[setup],{cwd:process.cwd(),encoding:'utf8',env:{...process.env,HOME:temp,CHAT_DB:dbPath,INTERCOM_DELIVERY_CONFIG:join(temp,'.config/intercom/desktop-delivery.json'),INTERCOM_HOME:temp,CODEX_HOME:codexHome,CLAUDE_CONFIG_DIR:claudeHome}})
+  assert(held.status!==0 && held.stderr.includes('explicit migration'), 'different database target is rejected even when HOME equals the fixture target')
+  assert(readFileSync(join(temp,'.local/share/intercom/desktop-service/runtime/dist/bridge.mjs')).equals(protectedRuntime),'migration refusal preserves service runtime before any replacement')
+  writeFileSync(configPath,configBytes)
   const shellFile = join(temp, '.config', 'intercom', 'shell.zsh')
   const shell = readFileSync(shellFile, 'utf8')
   assert(shell.includes('--dangerously-load-development-channels plugin:intercom@intercom'), 'Claude wrapper enables the installed channel plugin via the development flag')

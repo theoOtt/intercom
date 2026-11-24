@@ -16,7 +16,7 @@ for (const name of ['CHAT_IDENTITY', 'CHAT_IDENTITY_FILE', 'CLAUDE_CODE_SESSION_
   delete env[name]
 env.INTERCOM_COPILOT_SESSION_ID = sessionId
 env.SEAT = process.env.INTERCOM_COPILOT_SEAT || 'Copilot'
-const client = new Client({ name: 'copilot-intercom', version: '0.1.0' })
+const client = new Client({ name: 'copilot-intercom', version: '0.5.5-dev.20261124' })
 const transport = new StdioClientTransport({
   command: process.env.INTERCOM_NODE || 'node',
   args: ['--no-warnings', fileURLToPath(new URL('./bridge.mjs', import.meta.url))],

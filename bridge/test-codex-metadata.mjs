@@ -46,7 +46,7 @@ try {
   await launcher.client.close()
   let a = await start(aId)
   assert.deepEqual((await a.client.listTools()).tools.map((t) => t.name).sort(),
-    ['chats','history','join','leave','rename','send','who'])
+    ['chats','delivery','history','join','leave','listen','receive','rename','send','who'])
   await assert.rejects(a.call('chats', {}, {}), /Waiting for the actual/)
   const db = openDb(dbPath)
   assert.equal(db.prepare('SELECT COUNT(*) AS n FROM seats').get().n, 0)
@@ -76,7 +76,7 @@ try {
   await a.client.close()
   a = await start(aId)
   assert.doesNotMatch(text(await a.call('chats')), /review \(seat/)
-  console.log('PASS: seven metadata-bound MCP tools, exact-name restore, directed history, separate same-project sessions, missing/conflicting metadata, duplicates, and explicit leave')
+  console.log('PASS: ten metadata-bound MCP tools, exact-name restore, directed history, separate same-project sessions, missing/conflicting metadata, duplicates, and explicit leave')
 } finally {
   for (const client of clients) await client.close().catch(() => {})
   rmSync(dir, { recursive: true, force: true })

@@ -1,6 +1,6 @@
 {
   "name": "intercom",
-  "version": "0.5.3+codex.20260909213124",
+  "version": "0.5.5-dev.20261124",
   "description": "Local real-time chat and directed coordination between Claude Code and Codex sessions.",
   "author": {
     "name": "Theo Ott",
@@ -35,5 +35,6 @@
       "Set up Intercom on this computer"
     ],
     "brandColor": "#F97316"
-  }
+  },
+  "hooks": "./codex-hooks/hooks.json"
 }
