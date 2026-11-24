@@ -11,7 +11,8 @@ try{
  cpSync(root,fixture,{recursive:true,filter:p=>!['.git','node_modules'].includes(basename(p))&&!basename(p).startsWith('.intercom-plugin-install-')});
  symlinkSync(join(root,'bridge/node_modules'),join(fixture,'bridge/node_modules'),'dir');
  run('bridge/build-plugin.mjs');
- for(const file of ['bridge/test-db.mjs','bridge/test-visibility.mjs','bridge/test-sqlite-recovery.mjs','bridge/test-worker-retirement.mjs','bridge/test-native-handoff.mjs','bridge/test-sessions.mjs','bridge/test-mcp.mjs','bridge/test-copilot-relay.mjs','bridge/test-lifecycle.mjs','bridge/test-codex-metadata.mjs','codex/test-desktop-relay.mjs','codex/test-desktop-ipc-transport.mjs','codex/test-general-delivery.mjs','plugins/intercom/test-setup.mjs','codex/test-plugin-install.mjs'])run(file);
+ for(const file of ['bridge/test-db.mjs','bridge/test-visibility.mjs','bridge/test-sqlite-recovery.mjs','bridge/test-worker-retirement.mjs','bridge/test-native-handoff.mjs','bridge/test-sessions.mjs','bridge/test-mcp.mjs','bridge/test-copilot-relay.mjs','bridge/test-lifecycle.mjs','bridge/test-codex-metadata.mjs','bridge/test-claude-hooks.mjs','codex/test-desktop-relay.mjs','codex/test-desktop-ipc-transport.mjs','codex/test-general-delivery.mjs','plugins/intercom/test-setup.mjs','codex/test-plugin-install.mjs'])run(file);
+ run('bridge/test-claude-hooks.mjs',[],{INTERCOM_BRIDGE_PATH:join(fixture,'plugins/intercom/dist/bridge.mjs'),INTERCOM_CLAUDE_HOOK_PATH:join(fixture,'plugins/intercom/runtime/claude/hook.mjs'),INTERCOM_CLAUDE_CONFIGURE_PATH:join(fixture,'plugins/intercom/runtime/claude/configure.mjs')});
  const build=join(temp,'copilot-build');run('bridge/build-copilot.mjs',[build]);
  if(process.env.INTERCOM_TEST_SDK){
   run('bridge/test-copilot-mcp.cjs',[],{INTERCOM_TEST_BUILD:build});

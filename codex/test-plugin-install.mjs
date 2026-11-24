@@ -75,7 +75,7 @@ requires_openai_auth = false
  const pluginHooks=hookState.data.flatMap(entry=>entry.hooks).filter(hook=>hook.sourcePath?.includes('codex-hooks'));
  if(!pluginHooks.length)console.error('Fixture hook inventory:',JSON.stringify(hookState));
  assert(pluginHooks.length>=7,'Installed Intercom hook declarations were not loaded');
- assert.deepEqual([...new Set(pluginHooks.map(hook=>hook.eventName))].sort(),['interrupt','postToolUse','sessionEnd','stop','userPromptSubmit'].sort());
+ assert.deepEqual([...new Set(pluginHooks.map(hook=>hook.eventName))].sort(),['interrupt','postToolUse','preToolUse','sessionEnd','stop','userPromptSubmit'].sort());
  assert(pluginHooks.every(hook=>hook.sourcePath.includes('codex-hooks')),'Hooks must come from this installed plugin');
  console.log('PASS: actual isolated plugin loader discovers all Codex lifecycle hook declarations; trust admission left unchanged');
  const result=await client.request('mcpServer/tool/call',{threadId:thread.id,server:'intercom',tool:'chats',arguments:{}})

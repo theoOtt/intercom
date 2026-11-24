@@ -147,6 +147,48 @@ try {
     assert.equal(await waiting.completed, ''); assert.equal(readdirSync(f.stateDir).length, 0);
     assert.equal(core.activeBusyTurn(f.db, f.identities[0]), null);
   }));
+  await test('genuine tool boundary bootstraps delegated root turn once and defers idle delivery', () => fixture(async f => {
+    f.config.waitTimeoutMs = 10000; f.save();
+    const waiting = f.wait(0, {hook_event_name: 'PreToolUse', tool_name: 'Bash'});
+    await f.lockReady();
+    // Wait for the real marker rather than treating lock creation as readiness.
+    const deadline = Date.now() + 1000;
+    while (!core.activeBusyTurn(f.db, f.identities[0])) {
+      assert(Date.now() < deadline); await new Promise(resolve => setTimeout(resolve, 5));
+    }
+    const elapsed = [];
+    for (let n = 0; n < 5; n++) {
+      const started = performance.now();
+      assert.equal(f.run('./busy-wait.mjs', f.event(0, {hook_event_name: 'PreToolUse', tool_name: 'Bash'})), '');
+      elapsed.push(performance.now() - started);
+    }
+    assert.equal(readdirSync(f.stateDir).length, 1);
+    const id = f.send('delegated peer'), relay = f.relay();
+    await relay.instance.tick(); assert.equal(relay.count(), 0);
+    const output = JSON.parse(await waiting.completed);
+    assert.equal(output.hookSpecificOutput.hookEventName, 'PreToolUse');
+    assert(output.hookSpecificOutput.additionalContext.includes('message_id=' + id));
+    assert.equal(f.receipt(id).state, 'submitting');
+    console.log('Repeated regular-tool bootstrap fast-exit milliseconds:', JSON.stringify({
+      count: elapsed.length, median: elapsed.sort((a, b) => a - b)[2], max: Math.max(...elapsed)}));
+    f.run('./busy-turn.mjs', f.event(0, {hook_event_name: 'Stop'}));
+  }));
+  await test('tool bootstrap requires enrolled root identity and actual live room membership', () => fixture(async f => {
+    assert.equal(f.run('./busy-wait.mjs', f.event(2, {hook_event_name: 'PreToolUse'})), '');
+    assert.equal(f.run('./busy-wait.mjs', f.event(0, {hook_event_name: 'PreToolUse', agent_id: randomUUID()})), '');
+    f.db.prepare("UPDATE connection_leases SET expires_at=0 WHERE identity=? AND role='bridge'").run(f.identities[0]);
+    assert.equal(await f.wait(0, {hook_event_name: 'PreToolUse', tool_name: 'Bash'}).completed, '');
+    assert.equal(core.activeBusyTurn(f.db, f.identities[0]), null);
+    assert.equal(readdirSync(f.stateDir).length, 0);
+  }));
+  await test('delayed tool bootstrap cannot resurrect an ended exact turn', () => fixture(async f => {
+    f.run('./busy-turn.mjs', f.event(0, {hook_event_name: 'Stop'}));
+    assert.equal(await f.wait(0, {hook_event_name: 'PreToolUse', tool_name: 'Bash'}).completed, '');
+    assert.equal(core.activeBusyTurn(f.db, f.identities[0]), null);
+    const id = f.send('idle after ended turn'), relay = f.relay();
+    await relay.instance.tick(); assert.equal(relay.count(), 1);
+    assert.equal(f.receipt(id).state, 'accepted');
+  }));
   await test('sustained unrelated WAL activity cannot starve pending receiver notification', () => fixture(async f => {
     f.start(); const waiting = f.wait(); await f.lockReady();
     const began = Date.now();

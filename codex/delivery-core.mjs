@@ -57,6 +57,11 @@ export function busySchema(db) {
   const columns = db.prepare('PRAGMA table_info(intercom_busy_turns)').all();
   if (!columns.some(column => column.name === 'lease_until'))
     db.exec('ALTER TABLE intercom_busy_turns ADD COLUMN lease_until INTEGER NOT NULL DEFAULT 0');
+  // Exact lifecycle tombstones fence async tool hooks that start after Stop.
+  db.exec(`CREATE TABLE IF NOT EXISTS intercom_ended_busy_turns (
+    identity TEXT NOT NULL, turn_id TEXT NOT NULL, generation TEXT NOT NULL,
+    PRIMARY KEY(identity,turn_id,generation)
+  )`);
 }
 
 export function busyTurnRecord(db, identity) {

@@ -1,6 +1,6 @@
 {
   "name": "intercom",
-  "version": "0.5.5-dev.20261124",
+  "version": "0.5.6-dev.20261124",
   "description": "Local real-time chat and directed coordination between Claude Code and Codex sessions.",
   "author": {
     "name": "Theo Ott",
@@ -15,5 +15,6 @@
     "claude-code",
     "codex"
   ],
-  "mcpServers": "./.mcp.claude.json"
+  "mcpServers": "./.mcp.claude.json",
+  "hooks": "./claude-hooks/hooks.json"
 }

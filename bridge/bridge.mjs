@@ -15,6 +15,7 @@ import {nativeHandoff} from '../codex/native-handoff.mjs';
 import {atomic,claimConnection,renewConnection,detachConnection,attachRooms,joinRoom,leaveRoom,liveMemberships,subscriptions} from './session-store.mjs';
 import {openDb,listSeats,knownChats,sendMessage,messagesAfter,history,setCursor,whoOnline,getDeliveryCursor,setDeliveryCursor,migrateChat} from './chat-db.mjs';
 import {SqliteRetry,isSqliteBusy,recoverOwnedConnections} from './sqlite-recovery.mjs';
+import {hookConfig as claudeHookConfig,attachRoute as attachClaudeRoute,route as claudeHookRoute,closeRoute as closeClaudeRoute,receiveProof as claudeReceiveProof} from '../claude/delivery.mjs';
 
 var CHAT_DB = process.env.CHAT_DB || join(homedir(), ".claude", "intercom", "chat.db");
 mkdirSync(dirname(CHAT_DB), { recursive: true, mode: 448 });
@@ -75,6 +76,7 @@ function bridgeDatabaseError(error) {
 var conflicts = [];
 var metadataIdentity = null;
 var desktopRelay = null;
+var claudeDelivery = null;
 var projectFromRoots = process.env.CHAT_PROJECT_FROM_ROOTS === "1" && !process.env.CHAT && !process.env.CHAT_PROJECT;
 var projectReady = !projectFromRoots;
 var projectInitialization;
@@ -132,6 +134,10 @@ function activateIdentity() {
     );
     identity = candidate;
     conflicts = attachRooms(db, identity, connection, startupChat, process.env.SEAT);
+    if (identity.startsWith('claude:')) {
+      claudeDelivery = claudeHookConfig(CHAT_DB);
+      attachClaudeRoute(db, identity, connection, claudeDelivery);
+    }
     refreshMemberships();
     if (metadataIdentity && process.env.CHAT_DESKTOP_RELAY !== "0") {
       desktopRelay = new DesktopRelay({ db, identity, bridgeConnection: connection, log });
@@ -158,7 +164,7 @@ function activateIdentity() {
   }
 }
 var server = new Server(
-  { name: "intercom", version: "0.5.5-dev.20261124" },
+  { name: "intercom", version: "0.5.6-dev.20261124" },
   {
     capabilities: { experimental: { "claude/channel": {} }, tools: {} },
     instructions: 'This is multi-session chat between Claude Code sessions over a shared store. Channel events are INCOMING messages from peers, formatted "[<chat>] <seat>: <text>". Default behavior is RELAY: show an incoming message to your user and reply only on their direction (autonomous back-and-forth only if the user explicitly says so). Tools: join({chat,seat?}) to enter a chat (seat auto-assigned if omitted); leave({chat}); chats() to list joined + available chats; send({chat?,body,to?}) to post a broadcast or address one live seat; (chat optional when in exactly one); history({chat?,limit?,before_id?}) for recent context; who({chat?}) for who is online. You may be in several chats at once.'
@@ -183,7 +189,7 @@ function doJoin(chat, seat) {
   return { assigned, peers, online: whoOnline(db, chat) };
 }
 var TOOLS = [
-  {name:"listen",description:"Rearm incoming delivery for this enrolled active Codex turn; returns its own routing proof only.",inputSchema:{type:"object",additionalProperties:false,properties:{}}},
+  {name:"listen",description:"Rearm this explicitly enrolled incoming listener; returns this actual session's routing proof only.",inputSchema:{type:"object",additionalProperties:false,properties:{}}},
   {name:"receive",description:"Read exactly one visible Intercom peer message by its durable message ID.",inputSchema:{type:"object",additionalProperties:false,properties:{message_id:{type:"integer",minimum:1}},required:["message_id"]}},
   {
     name: "delivery",
@@ -301,6 +307,13 @@ server.setRequestHandler(CallToolRequestSchema, async (req) => {
     const a = req.params.arguments || {};
     switch (req.params.name) {
       case "listen": {
+        if (identity.startsWith('claude:')) {
+          const config = claudeHookConfig(CHAT_DB);
+          const active = config && claudeDelivery && config.generation === claudeDelivery.generation && claudeHookRoute(db, identity, config);
+          if (!active || active.connection_id !== connection) throw Error('No explicitly selected Claude hook route to rearm');
+          const proof = {reader_identity:identity,generation:config.generation,connection_id:connection};
+          return {content:[{type:'text',text:JSON.stringify({intercom_listen:proof})}],structuredContent:{intercom_listen:proof}};
+        }
         if(!identity.startsWith('codex:'))throw Error('Listen requires an enrolled Codex thread');
         const config=deliveryConfig(identity.slice(6)),active=busyTurnRecord(db,identity);
         if(!config||config.busyHooks!==true||active?.generation!==config.generation)throw Error('No active enrolled Intercom turn to rearm');
@@ -308,7 +321,9 @@ server.setRequestHandler(CallToolRequestSchema, async (req) => {
       }
       case "receive": {
         const row = receivedRow(db, identity, a.message_id);
-        return {content:[{type:"text",text:peerPrompt(row.chat,row)}],structuredContent:{intercom_receive:{reader_identity:identity,message_id:row.id}}};
+        const proof = identity.startsWith('claude:') ? claudeReceiveProof(db, identity, connection, claudeDelivery, row) : {};
+        const metadata = {reader_identity:identity,message_id:row.id,...proof};
+        return {content:[{type:"text",text:peerPrompt(row.chat,row)},...proof.claude_hook ? [{type:'text',text:JSON.stringify({intercom_receive:metadata})}] : []],structuredContent:{intercom_receive:metadata}};
       }
       case "join": {
         const r = doJoin(a.chat, a.seat);
@@ -332,7 +347,7 @@ server.setRequestHandler(CallToolRequestSchema, async (req) => {
           `You are in: ${mine.length ? mine.join(", ") : "(none)"}
 Available chats: ${all.length ? all.join(", ") : "(none)"}
 Identity: ${identity}
-` + (identity.startsWith('copilot:') ? (server.getClientVersion()?.name==='copilot-intercom' ? 'Delivery: Copilot SDK extension.\n' : 'Delivery: MCP pull-only; call history to read incoming messages. No automatic wake-up.\n') : '') + (projectWarning ? `${projectWarning}
+` + (identity.startsWith('claude:') ? (claudeDelivery ? 'Delivery: explicitly selected Claude hooks; host admission and live receipt remain to be verified. Native channel emission is disabled for this attachment.\n' : 'Delivery: Claude native channel; host channel admission is required.\n') : '') + (identity.startsWith('copilot:') ? (server.getClientVersion()?.name==='copilot-intercom' ? 'Delivery: Copilot SDK extension.\n' : 'Delivery: MCP pull-only; call history to read incoming messages. No automatic wake-up.\n') : '') + (projectWarning ? `${projectWarning}
 ` : "") + (metadataIdentity ? desktopRelay ? `Delivery: Desktop IPC relay \u2014 ${desktopRelay.state}
 ` : "Delivery: MCP pull-only; Desktop relay disabled.\n" : "") + `Saved rooms: ${subscriptions(db, identity).map((s) => `${s.chat} (${s.seat})`).join(", ") || "(none)"}
 ` + (conflicts.length ? `Restore conflicts:
@@ -448,7 +463,7 @@ setInterval(async () => {
   try {
     bridgeFence();
     refreshMemberships();
-    if (!identity.startsWith("claude:")) return;
+    if (!identity.startsWith("claude:") || claudeDelivery) return;
     for (const [chat, state] of joined) {
       try {
         const rows = messagesAfter(db, chat, state.seat, state.cursor, { identity: state.identity });
@@ -498,6 +513,7 @@ setInterval(() => {
 log(`loops started (poll=${POLL_MS}ms)`);
 function shutdown() {
   desktopRelay?.stop();
+  if (identity && claudeDelivery) try { closeClaudeRoute(db, identity, connection); } catch {}
   if (identity)
     try {
       detachConnection(db, identity, "bridge", connection);

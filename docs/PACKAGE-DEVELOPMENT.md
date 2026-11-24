@@ -1,6 +1,6 @@
 # Package source and provenance
 
-Development version: 0.5.5-dev.20261124.
+Development version: 0.5.6-dev.20261124.
 
 The source integration starts from the 0.5.3 repository and retains the existing Copilot adapter changes. Desktop delivery, receipt arbitration, transcript reconciliation, SQLite retry and persistent-worker recovery were recovered from the accepted local package implementation into explicit project modules. Third-party SDK code is not recovered into source: the build resolves the pinned MCP SDK through the dependency lockfile.
 

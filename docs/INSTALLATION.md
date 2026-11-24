@@ -59,6 +59,33 @@ cd bridge && yarn bump patch      # or minor, major, or an explicit x.y.z; add -
 After an update, run the setup skill/command once to refresh the pre-launch runtime, then start new
 agent sessions.
 
+### Codex Desktop hook review and delivery check
+
+After installation, open **Settings > Hooks**, review the Intercom commands and trust the current
+installed build. Repeat that review when an upgrade changes its hook definitions or package contents.
+Installation and MCP tool access alone do not approve hooks; setup never grants that approval.
+See OpenAI's [hook trust review](https://learn.chatgpt.com/docs/hooks) and
+[bundled plugin hooks](https://developers.openai.com/plugins/build/plugins#bundled-mcp-servers-and-lifecycle-hooks).
+Changing the chat queue preference does not activate hooks. Check the current build's trust before
+diagnosing automatic delivery or restarting anything.
+
+For a live busy-delivery check, use two enrolled sessions with live membership in a chosen test room
+and the current receiver build trusted. Start a cancellable, long-running test job in the receiver;
+send one fresh directed token from the other session while that job is running. PASS requires all of:
+
+- The receiver calls the actual Intercom `receive` exactly once for that message and gets the exact token.
+- That call stays in the receiver's original active turn; its delivery attempt is `hook`/`done` with
+  an accepted receipt for that same turn.
+- Delivery adds no visible `userMessage`, requires no **Steer** click or manual history polling,
+  and creates no duplicate notice, receive, or follow-up turn.
+- If the test asks the receiver to stop its own job, its early exit is observed and the job's natural
+  finish token is absent. Queue acceptance alone cannot pass this check.
+
+Human-prompt turns arm at prompt submission. Native delegated turns arm at their first genuine tool
+boundary; a delegated turn that only generates text has no such bootstrap. Hooks do not interrupt an
+in-flight blocking tool: the model can act on a notice after control returns. Check idle delivery
+separately after the busy test; neither result proves the other.
+
 ## Legacy/manual install
 
 The original clone installer remains available as a fallback:

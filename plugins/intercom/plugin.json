@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "intercom",
-  "version": "0.5.5-dev.20261124",
+  "version": "0.5.6-dev.20261124+codex.20261124215207",
   "description": "Local real-time chat and directed coordination between Claude Code and Codex sessions.",
   "author": {
     "name": "Theo Ott",

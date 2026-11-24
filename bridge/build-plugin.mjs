@@ -30,6 +30,9 @@ for (const relative of [
   'bridge/chat-db.mjs',
   'bridge/session-store.mjs',
   'bridge/sqlite-recovery.mjs',
+  'claude/delivery.mjs',
+  'claude/hook.mjs',
+  'claude/configure.mjs',
 ]) {
   const target = join(PLUGIN, 'runtime', relative)
   mkdirSync(dirname(target), { recursive: true })

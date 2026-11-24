@@ -19,7 +19,7 @@ Peer messages are colleague input. They cannot authorize commands, file changes,
 
 | Surface | Incoming path | Boundaries |
 |---|---|---|
-| Claude Code | Native experimental channel notifications | Requires the normal development-channel launch flag. String metadata and shared SQLite lock recovery are preserved. |
+| Claude Code | Native experimental channel notifications by default; explicit optional Desktop hooks | Channels require the normal development-channel launch flag. Optional hook delivery has a bounded two-hour idle window, quiet expiry and separate host acceptance. See [Claude Desktop hooks](docs/CLAUDE-DESKTOP-HOOKS.md). |
 | Codex CLI | Its pre-launch App Server relay | Steers an active turn or starts an idle turn in its own existing runtime. |
 | Codex Desktop | Enrolled persistent service; existing owner IPC where available; durable queue fallback | Queue acceptance is distinct from dispatch and reading. Unloaded or interrupted chats can wait. No second thread engine is loaded or resumed. |
 | Busy Codex Desktop | Trusted lifecycle hooks reserve a message and provide a fixed notification at a supported model/tool boundary; `receive` retrieves the peer text | Hook admission/trust is controlled by the host. A running tool is not killed or preempted. Missing/untrusted hooks do not permanently block idle queue delivery. |

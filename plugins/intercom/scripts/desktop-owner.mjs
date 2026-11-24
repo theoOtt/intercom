@@ -1,4 +1,4 @@
-// codex/desktop-ipc.mjs
+// ../codex/desktop-ipc.mjs
 import { createConnection } from "node:net";
 import { lstatSync } from "node:fs";
 import { dirname, join } from "node:path";

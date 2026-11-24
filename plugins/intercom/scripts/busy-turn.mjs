@@ -35,9 +35,14 @@ try {
       }
     }
   } else if (kind === 'SessionEnd') {
+    db.prepare(`INSERT OR IGNORE INTO intercom_ended_busy_turns
+      SELECT identity,turn_id,generation FROM intercom_busy_turns WHERE identity=? AND generation=?`)
+      .run(identity, config.generation);
     db.prepare('DELETE FROM intercom_busy_turns WHERE identity=? AND generation=?')
       .run(identity, config.generation);
   } else {
+    db.prepare('INSERT OR IGNORE INTO intercom_ended_busy_turns VALUES(?,?,?)')
+      .run(identity, event.turn_id, config.generation);
     db.prepare('DELETE FROM intercom_busy_turns WHERE identity=? AND turn_id=? AND generation=?')
       .run(identity, event.turn_id, config.generation);
   }

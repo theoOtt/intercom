@@ -1,0 +1,65 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"${CLAUDE_PLUGIN_ROOT}/runtime/claude/hook.mjs\"",
+            "asyncRewake": true,
+            "timeout": 7205
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"${CLAUDE_PLUGIN_ROOT}/runtime/claude/hook.mjs\"",
+            "asyncRewake": true,
+            "timeout": 7205
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"${CLAUDE_PLUGIN_ROOT}/runtime/claude/hook.mjs\"",
+            "asyncRewake": true,
+            "timeout": 7205
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"${CLAUDE_PLUGIN_ROOT}/runtime/claude/hook.mjs\"",
+            "asyncRewake": true,
+            "timeout": 7205
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "^mcp__(plugin_intercom_intercom|intercom)__(receive|listen)$",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"${CLAUDE_PLUGIN_ROOT}/runtime/claude/hook.mjs\"",
+            "asyncRewake": true,
+            "timeout": 7205
+          }
+        ]
+      }
+    ]
+  }
+}

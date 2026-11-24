@@ -4,7 +4,7 @@ import {watch, lstatSync, mkdirSync, openSync, writeSync, closeSync, readFileSyn
 import {dirname, join, isAbsolute} from 'node:path';
 import {randomUUID} from 'node:crypto';
 import {deliveryConfig, deliveryConfigPath, UUID, reserveBusyRow, deliveryNotice,
-  activeBusyTurn, busyTurnRecord, waitTimeout, deliveryUpkeepNotice} from './delivery-core.mjs';
+  activeBusyTurn, busyTurnRecord, busySchema, liveMember, waitTimeout, deliveryUpkeepNotice} from './delivery-core.mjs';
 
 let raw = '';
 for await (const chunk of process.stdin) {
@@ -13,7 +13,7 @@ for await (const chunk of process.stdin) {
 }
 const event = JSON.parse(raw || '{}');
 if (event.agent_id || !UUID.test(event.session_id || '') || !UUID.test(event.turn_id || '') ||
-    !['UserPromptSubmit', 'PostToolUse'].includes(event.hook_event_name)) process.exit(0);
+    !['UserPromptSubmit', 'PreToolUse', 'PostToolUse'].includes(event.hook_event_name)) process.exit(0);
 // Rearm only after the real bounded receive tool, never an unrelated tool.
 if (event.hook_event_name === 'PostToolUse' && !['mcp__intercom__receive', 'mcp__intercom__listen'].includes(event.tool_name)) process.exit(0);
 if (event.tool_name === 'mcp__intercom__listen') {
@@ -91,6 +91,26 @@ function scan() {
       throw Error('Intercom database replaced; wait stopped for review');
     db.exec('BEGIN IMMEDIATE');
     transaction = true;
+    // Delegated function-output turns do not submit a user prompt. Their first
+    // genuine tool boundary supplies the same host-owned root session/turn IDs.
+    // The exclusive waiter lock above makes later tool boundaries fast exits.
+    if (event.hook_event_name === 'PreToolUse' && !armed) {
+      busySchema(db);
+      const old = activeBusyTurn(db, identity);
+      const member = db.prepare('SELECT chat FROM subscriptions WHERE identity=?').all(identity)
+        .some(row => liveMember(db, identity, row.chat));
+      const ended = db.prepare('SELECT 1 FROM intercom_ended_busy_turns WHERE identity=? AND turn_id=? AND generation=?')
+        .get(identity, event.turn_id, config.generation);
+      if (!member || ended || (old && (old.turn_id !== event.turn_id || old.generation !== config.generation))) {
+        db.exec('COMMIT'); transaction = false; finish(); return;
+      }
+      const now = Date.now();
+      db.prepare(`INSERT INTO intercom_busy_turns VALUES(?,?,?,?,?,?)
+        ON CONFLICT(identity) DO UPDATE SET turn_id=excluded.turn_id,
+        started_at=excluded.started_at,last_safe_at=excluded.last_safe_at,
+        generation=excluded.generation,lease_until=excluded.lease_until`)
+        .run(identity, event.turn_id, old?.started_at ?? now, now, config.generation, now + ttl);
+    }
     let active = activeBusyTurn(db, identity);
     // A genuine receive/listen PostToolUse is a new safe point in this exact
     // current turn, even when an earlier routing lease expired during a long tool.
