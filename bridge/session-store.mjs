@@ -4,7 +4,7 @@ import { randomUUID } from 'node:crypto'
 import { maxId, setCursor, setDeliveryCursor, getDeliveryCursor } from './chat-db.mjs'
 
 export const LEASE_MS = 30_000
-export const durable = (identity) => /^(codex|claude):.+/.test(identity || '')
+export const durable = (identity) => /^(codex|claude|copilot):.+/.test(identity || '')
 export function atomic(db, fn) {
   const savepoint = `s_${randomUUID().replaceAll('-', '')}`
   db.exec(`SAVEPOINT ${savepoint}`)
@@ -184,12 +184,15 @@ export function joinRoom(db, identity, connection, chat, requested, { restoring 
         `INSERT INTO subscriptions VALUES (?,?,?)
       ON CONFLICT(identity,chat) DO UPDATE SET seat=excluded.seat`
       ).run(identity, chat, assigned)
-    for (const consumer of ['claude-channel', 'codex-app-server']) {
+    const consumers = identity.startsWith('copilot:')
+      ? ['copilot-sdk']
+      : ['claude-channel', 'codex-app-server']
+    for (const consumer of consumers) {
       if (getDeliveryCursor(db, chat, identity, consumer) === null) {
         setDeliveryCursor(db, chat, identity, consumer, maxId(db, chat))
       }
     }
-    setCursor(db, chat, assigned, getDeliveryCursor(db, chat, identity, 'claude-channel'))
+    setCursor(db, chat, assigned, getDeliveryCursor(db, chat, identity, consumers[0]))
     return assigned
   })
 }

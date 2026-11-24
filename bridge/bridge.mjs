@@ -59,6 +59,14 @@ mkdirSync(dirname(CHAT_DB), { recursive: true, mode: 0o700 })
 const FALLBACK_IDENTITY = `process:${process.pid}:${Date.now()}`
 function currentIdentity() {
   const host = server.getClientVersion()?.name || ''
+  if (host === 'copilot-intercom' || host === 'copilot-cli') {
+    const id = host === 'copilot-intercom'
+      ? process.env.INTERCOM_COPILOT_SESSION_ID
+      : process.env.COPILOT_AGENT_SESSION_ID
+    return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id || '')
+      ? `copilot:${id}`
+      : FALLBACK_IDENTITY
+  }
   // Nested agents inherit shell environment. A Claude reviewer launched by
   // Codex must never consume its parent's identity file, or vice versa.
   if (/claude/i.test(host)) {
@@ -142,9 +150,9 @@ function activateIdentity() {
   // The resume picker and forks must resolve their ACTUAL thread before any seat
   // is claimed. Never migrate provisional subscriptions into an existing owner.
   if (process.env.CHAT_IDENTITY_FILE && candidate.startsWith('codex-startup:')) return
-  if (!/^(codex|claude):.+/.test(candidate)) {
+  if (!/^(codex|claude|copilot):.+/.test(candidate)) {
     attachmentError =
-      'No resumable session ID available. Launch Codex through the Intercom wrapper or Claude Code with its session ID environment; a PID or seat name cannot identify a conversation.'
+      'No resumable session ID available. Use the Intercom launcher, Claude session environment, or Copilot conversation environment; a PID or seat name cannot identify a conversation.'
     log(`ATTACHMENT REJECTED: ${attachmentError}`)
     return
   }
@@ -340,6 +348,11 @@ server.setRequestHandler(CallToolRequestSchema, async (req) => {
           `You are in: ${mine.length ? mine.join(', ') : '(none)'}\n` +
             `Available chats: ${all.length ? all.join(', ') : '(none)'}\n` +
             `Identity: ${identity}\n` +
+            (identity.startsWith('copilot:')
+              ? (server.getClientVersion()?.name === 'copilot-intercom'
+                ? 'Delivery: Copilot SDK extension.\n'
+                : 'Delivery: MCP pull-only; call history to read incoming messages. No automatic wake-up.\n')
+              : '') +
             (projectWarning ? `${projectWarning}\n` : '') +
             (metadataIdentity ? (desktopRelay
               ? `Delivery: Desktop IPC relay — ${desktopRelay.state}\n`
@@ -472,7 +485,7 @@ setInterval(async () => {
   try {
     renewConnection(db, identity, 'bridge', connection)
     refreshMemberships()
-    if (identity.startsWith('codex:')) return // only the Codex relay delivers to Codex
+    if (!identity.startsWith('claude:')) return // native relays own Codex/Copilot delivery
     // 2) Poll each joined chat for new peer messages.
     for (const [chat, state] of joined) {
       try {
